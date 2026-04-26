@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ecommerce-config
+  namespace: ecommerce
+data:
+  NODE_ENV: "production"
+  AUTH_SERVICE_URL: "http://auth-service:3001"
+  CORE_SERVICE_URL: "http://core-service:3003"
+  AI_SERVICE_URL: "http://ai-service:3002"

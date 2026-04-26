@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs grep *)",
+      "Bash(dir /s /b \"D:\\\\UIT\\\\điện toán\\\\Project_dtdm\\\\backend\")",
+      "Bash(grep -E \"\\\\.\\(jsx|js\\)$\")",
+      "Bash(grep -E \"\\\\.\\(json|js|html|yml|yaml\\)$\")"
+    ]
+  }
+}

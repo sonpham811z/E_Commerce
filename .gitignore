@@ -1,0 +1,77 @@
+# ── Node ──────────────────────────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn-integrity
+
+# ── Build output ──────────────────────────────────────────────────────────────
+dist/
+build/
+.vite/
+*.tsbuildinfo
+
+# ── Environment & secrets ─────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+logs/
+*.log
+pids/
+*.pid
+*.seed
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+desktop.ini
+
+# ── IDE ───────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── Terraform ─────────────────────────────────────────────────────────────────
+infrastructure/terraform/.terraform/
+infrastructure/terraform/.terraform.lock.hcl
+infrastructure/terraform/terraform.tfstate
+infrastructure/terraform/terraform.tfstate.backup
+infrastructure/terraform/terraform.tfvars
+infrastructure/terraform/*.tfplan
+infrastructure/terraform/crash.log
+infrastructure/terraform/override.tf
+infrastructure/terraform/override.tf.json
+infrastructure/terraform/*_override.tf
+infrastructure/terraform/*_override.tf.json
+
+# ── Docker ────────────────────────────────────────────────────────────────────
+.dockerignore
+
+# ── Coverage & tests ──────────────────────────────────────────────────────────
+coverage/
+.nyc_output/
+junit.xml
+
+# ── Kubernetes ────────────────────────────────────────────────────────────────
+k8s/secrets*.yaml
+kubeconfig
+*.kubeconfig
+
+# ── Misc ──────────────────────────────────────────────────────────────────────
+.cache/
+tmp/
+temp/

@@ -1,0 +1,75 @@
+services:
+  # ─── Backend Services ──────────────────────────────────────────────────────────
+  auth-service:
+    build:
+      context: ./backend/auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    environment:
+      DATABASE_URL: ${AUTH_DATABASE_URL:?Set AUTH_DATABASE_URL in .env for Neon}
+      DB_SSL: true
+    ports:
+      - "3001:3001"
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+
+  ai-service:
+    build:
+      context: ./backend/ai-service
+      dockerfile: Dockerfile
+    container_name: ai-service
+    environment:
+      DATABASE_URL: ${AI_DATABASE_URL:?Set AI_DATABASE_URL in .env for Neon}
+      DB_SSL: true
+      AUTH_SERVICE_URL: http://auth-service:3001
+      CORE_SERVICE_URL: http://core-service:3003
+    ports:
+      - "3002:3002"
+    depends_on:
+      auth-service:
+        condition: service_started
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+
+  core-service:
+    build:
+      context: ./backend/core-service
+      dockerfile: Dockerfile
+    container_name: core-service
+    environment:
+      DATABASE_URL: ${CORE_DATABASE_URL:?Set CORE_DATABASE_URL in .env for Neon}
+      DB_SSL: true
+      AUTH_SERVICE_URL: http://auth-service:3001
+    ports:
+      - "3003:3003"
+    depends_on:
+      auth-service:
+        condition: service_started
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+
+  # ─── Frontend ─────────────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    environment:
+      VITE_AUTH_SERVICE_URL: http://localhost:3001
+      VITE_AI_SERVICE_URL: http://localhost:3002
+      VITE_CORE_SERVICE_URL: http://localhost:3003
+    ports:
+      - "3000:80"
+    depends_on:
+      - auth-service
+      - ai-service
+      - core-service
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+networks:
+  ecommerce-network:
+    driver: bridge
