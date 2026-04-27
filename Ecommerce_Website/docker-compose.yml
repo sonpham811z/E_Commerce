@@ -1,0 +1,31 @@
+services:
+  # ── React/Vite Frontend ──────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend/Dockerfile
+      args:
+        # Vite bakes these into the JS bundle at build time
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
+        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY}
+        VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY}
+    container_name: haadtech_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - php
+    restart: unless-stopped
+
+  # ── PHP + Apache Backend ─────────────────────────────────────────────────────
+  php:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: haadtech_php
+    ports:
+      - "8080:80"
+    environment:
+      # Used by supabase_config.php (resetpassword.php) at runtime
+      SUPABASE_URL: ${VITE_SUPABASE_URL}
+      SUPABASE_KEY: ${VITE_SUPABASE_ANON_KEY}
+    restart: unless-stopped

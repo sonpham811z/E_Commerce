@@ -1,0 +1,96 @@
+# ====================
+# Python
+# ====================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.egg
+*.egg-info/
+*.log
+*.sqlite3
+*.db
+venv/
+.venv/
+
+
+
+# ====================
+# FastAPI / Uvicorn / Starlette
+# ====================
+instance/
+*.db
+*.sqlite3
+*.log
+
+# ====================
+# Node.js
+# ====================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Build files
+dist/
+dist-ssr/
+build/
+
+# ====================
+# Editor / OS
+# ====================
+.vscode/
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.swp
+*.swo
+*.swn
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# ====================
+# Environment variables (never commit these)
+# ====================
+.env
+.env.local
+.env.*.local
+
+# ====================
+# Docker
+# ====================
+# Never commit real env files used by docker compose
+.env.production
+.env.staging
+
+# ====================
+# Terraform
+# ====================
+infrastructure/.terraform/
+infrastructure/.terraform.lock.hcl
+infrastructure/terraform.tfstate
+infrastructure/terraform.tfstate.backup
+infrastructure/*.tfvars
+
+# ====================
+# Misc
+# ====================
+logs/
+*.log
+coverage/
+htmlcov/
+.cache/
+
+# ====================
+# Windows
+# ====================
+Thumbs.db
+Desktop.ini
+.claude
+
+kubeconfig.txt

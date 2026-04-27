@@ -1,0 +1,14 @@
+fastapi==0.104.0
+uvicorn==0.23.2
+pydantic==2.4.2
+pandas==2.1.1
+numpy==1.26.0
+scikit-learn==1.4.0
+python-dotenv==1.0.0
+requests==2.31.0
+python-multipart==0.0.6
+reportlab==4.0.0
+aiofiles==23.2.1
+pillow==9.5.0
+qrcode==7.3.1
+groq==0.4.0

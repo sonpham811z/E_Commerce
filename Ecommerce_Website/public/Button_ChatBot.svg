@@ -1,0 +1,13 @@
+<svg width="70" height="60" viewBox="0 0 70 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Button_ChatBot">
+<rect id="Rectangle 105" width="70" height="60" rx="15" fill="#EA1A1A"/>
+<g id="Vector">
+<path d="M50 18.4286H35H20C17.2386 18.4286 15 20.5605 15 23.1905V42.2381C15 44.868 17.2386 47 20 47H50C52.7614 47 55 44.868 55 42.2381V23.1905C55 20.5605 52.7614 18.4286 50 18.4286Z" fill="#D9D9D9"/>
+<path d="M10 32.7143H15Z" fill="#D9D9D9"/>
+<path d="M55 32.7143H60Z" fill="#D9D9D9"/>
+<path d="M42.5 30.3333V35.0952Z" fill="#D9D9D9"/>
+<path d="M27.5 30.3333V35.0952Z" fill="#D9D9D9"/>
+<path d="M35 18.4286H20C17.2386 18.4286 15 20.5605 15 23.1905V42.2381C15 44.868 17.2386 47 20 47H50C52.7614 47 55 44.868 55 42.2381V23.1905C55 20.5605 52.7614 18.4286 50 18.4286H35ZM35 18.4286L39.1667 13.0952L32.0833 7M10 32.7143H15M55 32.7143H60M42.5 30.3333V35.0952M27.5 30.3333V35.0952" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</g>
+</svg>
