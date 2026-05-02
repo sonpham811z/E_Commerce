@@ -39,12 +39,12 @@
 ## ⚙️ Công nghệ sử dụng
 
 - **Cloud Platform:** Microsoft Azure  
-- **Backend:** (Node.js / .NET / Java - tùy nhóm)  
-- **Frontend:** (ReactJS / HTML-CSS / Angular)  
-- **Database:** Azure SQL Database / Cosmos DB  
+- **Backend:** PHP
+- **Frontend:** ReactJS
+- **Database:** Azure SQL Database 
 - **Storage:** Azure Blob Storage  
 - **CI/CD:** Azure DevOps  
-- **Authentication:** Azure Active Directory / JWT  
+- **Authentication:**JWT  
 
 ---
 
