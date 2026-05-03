@@ -246,27 +246,21 @@ export async function fetchAddress(tableName = 'products') {
   });
 }
 
+let addressDataPromise = null;
+
+export function getAddressData() {
+  if (!addressDataPromise) {
+    addressDataPromise = fetch('/data.json').then(res => res.json());
+  }
+  return addressDataPromise;
+}
+
 export async function fetchProvinces() {
   try {
-    const { data, error } = await supabase
-      .from('provinces')
-      .select('code, name, full_name')
-      .order('name');
-    
-    if (error) {
-      console.error('Error fetching provinces:', error.message);
-      console.log('Using fallback provinces data');
-      return fallbackProvinces;
-    }
-
-    if (!data || data.length === 0) {
-      console.log('No provinces data from Supabase, using fallback');
-      return fallbackProvinces;
-    }
-
-    return data.map(province => ({
-      value: province.code,
-      label: province.name
+    const data = await getAddressData();
+    return data.map(p => ({
+      value: p.level1_id,
+      label: p.name
     }));
   } catch (err) {
     console.error('Exception in fetchProvinces:', err);
@@ -276,28 +270,13 @@ export async function fetchProvinces() {
 
 export async function fetchDistricts(provinceCode) {
   if (!provinceCode) return [];
-  
   try {
-    const { data, error } = await supabase
-      .from('districts')
-      .select('code, name, full_name')
-      .eq('province_code', provinceCode)
-      .order('name');
-    
-    if (error) {
-      console.error('Error fetching districts:', error.message);
-      console.log('Using fallback districts data for province', provinceCode);
-      return fallbackDistricts[provinceCode] || [];
-    }
-
-    if (!data || data.length === 0) {
-      console.log('No districts data from Supabase, using fallback for province', provinceCode);
-      return fallbackDistricts[provinceCode] || [];
-    }
-
-    return data.map(district => ({
-      value: district.code,
-      label: district.name
+    const data = await getAddressData();
+    const province = data.find(p => p.level1_id === provinceCode);
+    if (!province || !province.level2s) return fallbackDistricts[provinceCode] || [];
+    return province.level2s.map(d => ({
+      value: d.level2_id,
+      label: d.name
     }));
   } catch (err) {
     console.error('Exception in fetchDistricts:', err);
@@ -307,29 +286,20 @@ export async function fetchDistricts(provinceCode) {
 
 export async function fetchWards(districtCode) {
   if (!districtCode) return [];
-  
   try {
-    const { data, error } = await supabase
-      .from('wards')
-      .select('code, name, full_name')
-      .eq('district_code', districtCode)
-      .order('name');
-    
-    if (error) {
-      console.error('Error fetching wards:', error.message);
-      console.log('Using fallback wards data for district', districtCode);
-      return fallbackWards[districtCode] || [];
+    const data = await getAddressData();
+    for (const p of data) {
+      if (p.level2s) {
+        const district = p.level2s.find(d => d.level2_id === districtCode);
+        if (district && district.level3s) {
+          return district.level3s.map(w => ({
+            value: w.level3_id,
+            label: w.name
+          }));
+        }
+      }
     }
-
-    if (!data || data.length === 0) {
-      console.log('No wards data from Supabase, using fallback for district', districtCode);
-      return fallbackWards[districtCode] || [];
-    }
-
-    return data.map(ward => ({
-      value: ward.code,
-      label: ward.name
-    }));
+    return fallbackWards[districtCode] || [];
   } catch (err) {
     console.error('Exception in fetchWards:', err);
     return fallbackWards[districtCode] || [];
@@ -338,34 +308,31 @@ export async function fetchWards(districtCode) {
 
 export async function getFullAddress(provinceCode, districtCode, wardCode) {
   try {
-    const { data: provinceData, error: provinceError } = await supabase
-      .from('provinces')
-      .select('name, full_name')
-      .eq('code', provinceCode)
-      .single();
+    const data = await getAddressData();
+    let pName = 'Unknown Province';
+    let dName = 'Unknown District';
+    let wName = 'Unknown Ward';
     
-    if (provinceError) throw provinceError;
-    
-    const { data: districtData, error: districtError } = await supabase
-      .from('districts')
-      .select('name, full_name')
-      .eq('code', districtCode)
-      .single();
-    
-    if (districtError) throw districtError;
-    
-    const { data: wardData, error: wardError } = await supabase
-      .from('wards')
-      .select('name, full_name')
-      .eq('code', wardCode)
-      .single();
-    
-    if (wardError) throw wardError;
-    
+    const province = data.find(p => p.level1_id === provinceCode);
+    if (province) {
+      pName = province.name;
+      if (province.level2s) {
+        const district = province.level2s.find(d => d.level2_id === districtCode);
+        if (district) {
+          dName = district.name;
+          if (district.level3s) {
+            const ward = district.level3s.find(w => w.level3_id === wardCode);
+            if (ward) {
+              wName = ward.name;
+            }
+          }
+        }
+      }
+    }
     return {
-      province: provinceData,
-      district: districtData,
-      ward: wardData
+      province: { name: pName, full_name: pName },
+      district: { name: dName, full_name: dName },
+      ward: { name: wName, full_name: wName }
     };
   } catch (error) {
     console.error('Error fetching address information:', error.message);

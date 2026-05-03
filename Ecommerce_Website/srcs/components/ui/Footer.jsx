@@ -62,7 +62,7 @@ function Footer() {
             </li>
             <li>
               <Link
-                to='/privacy-policy'
+                to='/chinh-sach-bao-mat'
                 className='block px-2 sm:px-3 py-1 rounded-md transform transition duration-300 hover:scale-105 hover:bg-red-600 hover:text-white text-sm sm:text-base'
               >
                 Chính sách bảo mật

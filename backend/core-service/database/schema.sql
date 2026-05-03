@@ -21,10 +21,12 @@ CREATE INDEX IF NOT EXISTS idx_categories_parent    ON categories (parent_id);
 -- ─── Products ─────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS products (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  title           VARCHAR(255) NOT NULL,
+  title           TEXT NOT NULL,
   description     TEXT,
   category        VARCHAR(100),
   category_id     UUID REFERENCES categories(id) ON DELETE SET NULL,
+  brand           VARCHAR(100),
+  specs           JSONB DEFAULT '{}',
   image           TEXT,
   images          JSONB DEFAULT '[]',
   price           NUMERIC(15, 0) NOT NULL CHECK (price >= 0),
@@ -32,6 +34,7 @@ CREATE TABLE IF NOT EXISTS products (
   sale_price      NUMERIC(15, 0),
   stock           INTEGER NOT NULL DEFAULT 0 CHECK (stock >= 0),
   rating          NUMERIC(3, 2) DEFAULT 0 CHECK (rating >= 0 AND rating <= 5),
+  review_count    INTEGER DEFAULT 0,
   is_active       BOOLEAN NOT NULL DEFAULT true,
   is_featured     BOOLEAN NOT NULL DEFAULT false,
   created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),

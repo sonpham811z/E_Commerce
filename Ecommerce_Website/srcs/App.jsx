@@ -27,7 +27,7 @@ import JobPage from './components/features/footer-components/JobPage';
 import CustomerSupportForm from './components/features/footer-components/CustomerSupportForm';
 import InstallmentPlan from './components/features/footer-components/InstallmentPlan';
 import PaymentGuide from './components/features/footer-components/PaymentGuide';
-import PrivacyPolicy from './components/features/footer-components/PrivacyPolicy';
+import ChinhSachBaoMat from './components/features/footer-components/ChinhSachBaoMat';
 import ShippingPolicy from './components/features/footer-components/ShippingPolicy';
 import ShoppingGuide from './components/features/footer-components/ShoppingGuide';
 import ShowroomSystem from './components/features/footer-components/ShowroomSystem';
@@ -258,10 +258,10 @@ function App() {
                         }
                       />
                       <Route
-                        path='privacy-policy'
+                        path='chinh-sach-bao-mat'
                         element={
                           <AnimatedPage>
-                            <PrivacyPolicy />
+                            <ChinhSachBaoMat />
                           </AnimatedPage>
                         }
                       />

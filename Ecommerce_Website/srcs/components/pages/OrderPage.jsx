@@ -108,7 +108,16 @@ const OrderPage = () => {
     setIsApplyingDiscount(true);
     // Giả lập API call
     setTimeout(() => {
-      const discount = availableDiscounts[discountCode.toUpperCase()];
+      const code = discountCode.toUpperCase();
+      const quantity = product.quantity || 1;
+      
+      if (code === 'WELCOME' && quantity > 1) {
+        toast.error('Mã WELCOME chỉ áp dụng cho đơn hàng có 1 sản phẩm');
+        setIsApplyingDiscount(false);
+        return;
+      }
+      
+      const discount = availableDiscounts[code];
       if (discount) {
         const originalPrice = parseInt(product.salePrice.replace(/[^\d]/g, ''));
         const discountAmount = Math.min(
@@ -165,6 +174,9 @@ const OrderPage = () => {
           originalPrice = product.salePrice;
         }
       }
+      
+      // Multiply by quantity
+      originalPrice = originalPrice * (product.quantity || 1);
       
       const discountAmount = appliedDiscount ? appliedDiscount.amount : 0;
       return originalPrice - discountAmount;
@@ -809,12 +821,13 @@ const OrderPage = () => {
             <OrderSummary 
               subtotal={product?.salePrice ? 
                 (typeof product.salePrice === 'string' && product.salePrice.replace ? 
-                  parseInt(product.salePrice.replace(/[^\d]/g, '')) : 
-                  parseInt(product.salePrice) || 0) : 0}
+                  parseInt(product.salePrice.replace(/[^\d]/g, '')) * (product.quantity || 1) : 
+                  parseInt(product.salePrice) * (product.quantity || 1) || 0) : 0}
               shipping={0}
               discount={appliedDiscount?.amount || 0}
               total={calculateFinalPrice()}
               formatPrice={formatPrice}
+              quantity={product?.quantity || 1}
             />
           </motion.div>
         </div>

@@ -284,13 +284,19 @@ function UserOrders() {
                         </h4>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                          {order.items.slice(0, 3).map((item, i) => (
+                          {order.items.slice(0, 3).map((item, i) => {
+                            const imageUrl = item.image_url || item.product_image;
+                            return (
                             <div key={i} className="group rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 bg-white border border-gray-100 transform hover:-translate-y-1">
                               <div className="relative w-full h-44 bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
-                                {item.image_url ? (
+                                {imageUrl ? (
                                   <img
-                                    src={item.image_url}
+                                    src={imageUrl}
                                     alt={item.product_name}
+                                    onError={(e) => {
+                                      e.target.onerror = null;
+                                      e.target.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22200%22%20viewBox%3D%220%200%20300%20200%22%3E%3Crect%20width%3D%22300%22%20height%3D%22200%22%20fill%3D%22%23f3f4f6%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2220%22%20fill%3D%22%239ca3af%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fsvg%3E';
+                                    }}
                                     className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-110"
                                   />
                                 ) : (
@@ -316,7 +322,8 @@ function UserOrders() {
                                 </div>
                               </div>
                             </div>
-                          ))}
+                            );
+                          })}
 
                           {order.items.length > 3 && (
                             <div className="flex flex-col items-center justify-center rounded-xl shadow-inner bg-gradient-to-br from-indigo-50 to-red-50 border border-gray-200 hover:shadow-md transition-all duration-300 p-5">
@@ -374,12 +381,22 @@ function UserOrders() {
 
                       <div className="p-6">
                         <div className="space-y-6">
-                          {order.items?.length > 0 ? order.items.map((item, index) => (
+                          {order.items?.length > 0 ? order.items.map((item, index) => {
+                            const imageUrl = item.image_url || item.product_image;
+                            return (
                             <div key={index} className="flex flex-col sm:flex-row gap-5 bg-white rounded-xl p-5 border border-gray-200 shadow-md hover:shadow-lg transition-all duration-300">
                               <div className="sm:w-1/4">
                                 <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl h-48 flex items-center justify-center p-4 overflow-hidden shadow-inner">
-                                  {item.image_url ? (
-                                    <img src={item.image_url} alt={item.product_name} className="max-w-full max-h-full object-contain" />
+                                  {imageUrl ? (
+                                    <img 
+                                      src={imageUrl} 
+                                      alt={item.product_name} 
+                                      onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22200%22%20viewBox%3D%220%200%20300%20200%22%3E%3Crect%20width%3D%22300%22%20height%3D%22200%22%20fill%3D%22%23f3f4f6%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2220%22%20fill%3D%22%239ca3af%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fsvg%3E';
+                                      }}
+                                      className="max-w-full max-h-full object-contain" 
+                                    />
                                   ) : (
                                     <FaShoppingBag className="text-gray-300 text-5xl" />
                                   )}
@@ -403,7 +420,8 @@ function UserOrders() {
                                 </div>
                               </div>
                             </div>
-                          )) : (
+                            );
+                          }) : (
                             <p className="text-gray-400 text-center py-4">Không có thông tin sản phẩm</p>
                           )}
                         </div>
@@ -535,38 +553,7 @@ function UserOrders() {
                     )}
 
                     <div className="flex items-center gap-2 mr-auto">
-                      <select
-                        value={statusUpdates[order.id] || order.status}
-                        onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                        className="px-3 py-2.5 rounded-lg text-sm border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all"
-                      >
-                        {Object.entries(STATUS_LABELS)
-                          .filter(([key]) => key !== 'all')
-                          .map(([key, label]) => (
-                            <option key={key} value={key}>{label}</option>
-                          ))}
-                      </select>
-
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className={`${
-                          statusUpdates[order.id] && statusUpdates[order.id] !== order.status
-                            ? "bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white"
-                            : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                        } px-5 py-2.5 rounded-lg text-sm font-medium transition-all shadow-sm`}
-                        onClick={() => {
-                          if (statusUpdates[order.id] && statusUpdates[order.id] !== order.status) {
-                            handleUpdateStatus(order.id, statusUpdates[order.id]);
-                          }
-                        }}
-                        disabled={!statusUpdates[order.id] || statusUpdates[order.id] === order.status || updateStatusMutation.isPending}
-                      >
-                        {updateStatusMutation.isPending && updateStatusMutation.variables?.orderId === order.id
-                          ? <span className="flex items-center"><div className="w-3 h-3 border-t-2 border-white border-r-2 rounded-full animate-spin mr-2" />Đang cập nhật...</span>
-                          : "Cập nhật trạng thái"
-                        }
-                      </motion.button>
+                      {/* Xoá dropdown cập nhật trạng thái vì user thường không được đổi status */}
                     </div>
 
                     <motion.button

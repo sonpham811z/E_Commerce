@@ -18,12 +18,13 @@ class ProductModel {
     const conditions = ['p.is_active = $1'];
     const values = [is_active];
 
-    if (category) { conditions.push(`p.category = $${values.push(category)}`); }
+    if (category) { conditions.push(`p.category ILIKE $${values.push(category)}`); }
     if (featured !== undefined) { conditions.push(`p.is_featured = $${values.push(featured === 'true' || featured === true)}`); }
     if (min_price) { conditions.push(`p.price >= $${values.push(parseFloat(min_price))}`); }
     if (max_price) { conditions.push(`p.price <= $${values.push(parseFloat(max_price))}`); }
     if (search) {
-      conditions.push(`(p.title ILIKE $${values.push(`%${search}%`)} OR p.description ILIKE $${values.length})`);
+      const searchIdx = values.push(`%${search}%`);
+      conditions.push(`(p.title ILIKE $${searchIdx} OR p.description ILIKE $${searchIdx})`);
     }
 
     const where = `WHERE ${conditions.join(' AND ')}`;
@@ -57,18 +58,18 @@ class ProductModel {
   }
 
   static async create(data) {
-    const { title, description, category, category_id, image, images, price, original_price, sale_price, stock, rating, is_active, is_featured } = data;
+    const { title, description, category, category_id, brand, specs, image, images, price, original_price, sale_price, stock, rating, review_count, is_active, is_featured } = data;
     const { rows } = await query(
-      `INSERT INTO products (title, description, category, category_id, image, images, price, original_price, sale_price, stock, rating, is_active, is_featured)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+      `INSERT INTO products (title, description, category, category_id, brand, specs, image, images, price, original_price, sale_price, stock, rating, review_count, is_active, is_featured)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
        RETURNING *`,
-      [title, description, category, category_id, image, JSON.stringify(images || []), price, original_price, sale_price, stock ?? 0, rating ?? 0, is_active ?? true, is_featured ?? false]
+      [title, description, category, category_id, brand, JSON.stringify(specs || {}), image, JSON.stringify(images || []), price, original_price, sale_price, stock ?? 0, rating ?? 0, review_count ?? 0, is_active ?? true, is_featured ?? false]
     );
     return rows[0];
   }
 
   static async updateById(id, data) {
-    const allowed = ['title', 'description', 'category', 'category_id', 'image', 'images', 'price', 'original_price', 'sale_price', 'stock', 'rating', 'is_active', 'is_featured'];
+    const allowed = ['title', 'description', 'category', 'category_id', 'brand', 'specs', 'image', 'images', 'price', 'original_price', 'sale_price', 'stock', 'rating', 'review_count', 'is_active', 'is_featured'];
     const updates = Object.entries(data)
       .filter(([k]) => allowed.includes(k))
       .map(([k], i) => `${k} = $${i + 2}`);
