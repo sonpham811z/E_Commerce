@@ -23,10 +23,12 @@ CREATE TABLE IF NOT EXISTS products (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title           VARCHAR(255) NOT NULL,
   description     TEXT,
+  brand           VARCHAR(100), -- Đã thêm cột brand
   category        VARCHAR(100),
   category_id     UUID REFERENCES categories(id) ON DELETE SET NULL,
   image           TEXT,
   images          JSONB DEFAULT '[]',
+  specs           JSONB,        -- Đã thêm cột specs
   price           NUMERIC(15, 0) NOT NULL CHECK (price >= 0),
   original_price  NUMERIC(15, 0),
   sale_price      NUMERIC(15, 0),
