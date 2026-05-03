@@ -46,34 +46,26 @@ class ProductModel {
     const params = [];
     const conditions = [];
 
-    // Always filter by is_active
     params.push(is_active);
     conditions.push(`p.is_active = $${params.length}`);
 
-    // Category filter with aliases
     if (category) {
       const variants = getCategoryVariants(category);
       if (variants.length > 0) {
         const placeholders = [];
         for (const variant of variants) {
           params.push(variant);
-          params.push(`${variant}-%`);
-          placeholders.push(`(LOWER(p.category) = $${params.length - 1} OR LOWER(p.category) LIKE $${params.length})`);
+          placeholders.push(`p.category ILIKE $${params.length}`);
         }
         conditions.push(`(${placeholders.join(' OR ')})`);
       }
     }
 
-    if (category) { conditions.push(`p.category ILIKE $${values.push(category)}`); }
-    if (featured !== undefined) { conditions.push(`p.is_featured = $${values.push(featured === 'true' || featured === true)}`); }
-    if (min_price) { conditions.push(`p.price >= $${values.push(parseFloat(min_price))}`); }
-    if (max_price) { conditions.push(`p.price <= $${values.push(parseFloat(max_price))}`); }
-    if (search) {
-      const searchIdx = values.push(`%${search}%`);
-      conditions.push(`(p.title ILIKE $${searchIdx} OR p.description ILIKE $${searchIdx})`);
+    if (featured !== undefined) {
+      params.push(featured === 'true' || featured === true);
+      conditions.push(`p.is_featured = $${params.length}`);
     }
 
-    // Price range filter
     if (min_price) {
       params.push(parseFloat(min_price));
       conditions.push(`p.price >= $${params.length}`);
@@ -83,16 +75,14 @@ class ProductModel {
       conditions.push(`p.price <= $${params.length}`);
     }
 
-    // Search filter
     if (search) {
-      const searchTerm = `%${search}%`;
-      params.push(searchTerm);
-      params.push(searchTerm);
+      params.push(`%${search}%`);
+      params.push(`%${search}%`);
       conditions.push(`(p.title ILIKE $${params.length - 1} OR p.description ILIKE $${params.length})`);
     }
 
     const whereClause = conditions.join(' AND ');
-    
+
     const sortMap = {
       price_asc: 'p.price ASC',
       price_desc: 'p.price DESC',
@@ -107,7 +97,6 @@ class ProductModel {
       params
     );
 
-    // Get paginated products
     params.push(cap, offset);
     const { rows: products } = await query(
       `SELECT p.*, c.name as category_name FROM products p
