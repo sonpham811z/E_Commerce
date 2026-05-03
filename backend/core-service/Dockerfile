@@ -7,6 +7,7 @@ FROM node:20-alpine
 WORKDIR /app
 COPY --from=base /app/node_modules ./node_modules
 COPY . .
+RUN mkdir -p /app/logs && chmod -R 777 /app/logs
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 USER appuser
 EXPOSE 3003

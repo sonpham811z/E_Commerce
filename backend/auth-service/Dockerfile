@@ -8,6 +8,7 @@ WORKDIR /app
 COPY --from=base /app/node_modules ./node_modules
 COPY . .
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+RUN mkdir -p /app/logs && chmod -R 777 /app/logs
 USER appuser
 EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
