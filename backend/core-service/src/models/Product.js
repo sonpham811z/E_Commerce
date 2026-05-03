@@ -4,6 +4,31 @@ const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = parseInt(process.env.DEFAULT_PAGE_SIZE) || 20;
 const MAX_LIMIT = parseInt(process.env.MAX_PAGE_SIZE) || 100;
 
+const CATEGORY_ALIASES = {
+  laptop: ['laptop', 'laptop gaming'],
+  laptops: ['laptop', 'laptop gaming'],
+  keyboard: ['bàn phím'],
+  keyboards: ['bàn phím'],
+  headset: ['tai nghe'],
+  headsets: ['tai nghe'],
+  headphone: ['tai nghe'],
+  headphones: ['tai nghe'],
+  ssd: ['linh kiện'],
+  storage: ['linh kiện'],
+  mouse: ['chuột'],
+  mice: ['chuột'],
+  monitor: ['màn hình'],
+  monitors: ['màn hình'],
+  pc: ['pc gaming'],
+  gaming: ['pc gaming'],
+};
+
+function getCategoryVariants(category) {
+  const normalized = String(category || '').trim().toLowerCase();
+  if (!normalized) return [];
+  return [...new Set(CATEGORY_ALIASES[normalized] || [normalized])];
+}
+
 class ProductModel {
   static async findById(id) {
     const { rows } = await query(
@@ -15,8 +40,29 @@ class ProductModel {
 
   static async list({ page = DEFAULT_PAGE, limit = DEFAULT_LIMIT, category, search, min_price, max_price, sort, featured, is_active = true } = {}) {
     const cap = Math.min(limit, MAX_LIMIT);
-    const conditions = ['p.is_active = $1'];
-    const values = [is_active];
+    const pageNum = Math.max(parseInt(page) || DEFAULT_PAGE, 1);
+    const offset = (pageNum - 1) * cap;
+
+    const params = [];
+    const conditions = [];
+
+    // Always filter by is_active
+    params.push(is_active);
+    conditions.push(`p.is_active = $${params.length}`);
+
+    // Category filter with aliases
+    if (category) {
+      const variants = getCategoryVariants(category);
+      if (variants.length > 0) {
+        const placeholders = [];
+        for (const variant of variants) {
+          params.push(variant);
+          params.push(`${variant}-%`);
+          placeholders.push(`(LOWER(p.category) = $${params.length - 1} OR LOWER(p.category) LIKE $${params.length})`);
+        }
+        conditions.push(`(${placeholders.join(' OR ')})`);
+      }
+    }
 
     if (category) { conditions.push(`p.category ILIKE $${values.push(category)}`); }
     if (featured !== undefined) { conditions.push(`p.is_featured = $${values.push(featured === 'true' || featured === true)}`); }
@@ -27,8 +73,26 @@ class ProductModel {
       conditions.push(`(p.title ILIKE $${searchIdx} OR p.description ILIKE $${searchIdx})`);
     }
 
-    const where = `WHERE ${conditions.join(' AND ')}`;
+    // Price range filter
+    if (min_price) {
+      params.push(parseFloat(min_price));
+      conditions.push(`p.price >= $${params.length}`);
+    }
+    if (max_price) {
+      params.push(parseFloat(max_price));
+      conditions.push(`p.price <= $${params.length}`);
+    }
 
+    // Search filter
+    if (search) {
+      const searchTerm = `%${search}%`;
+      params.push(searchTerm);
+      params.push(searchTerm);
+      conditions.push(`(p.title ILIKE $${params.length - 1} OR p.description ILIKE $${params.length})`);
+    }
+
+    const whereClause = conditions.join(' AND ');
+    
     const sortMap = {
       price_asc: 'p.price ASC',
       price_desc: 'p.price DESC',
@@ -36,22 +100,28 @@ class ProductModel {
       newest: 'p.created_at DESC',
     };
     const orderBy = sortMap[sort] || 'p.created_at DESC';
-    const offset = (page - 1) * cap;
 
-    const [{ rows: products }, { rows: countRows }] = await Promise.all([
-      query(
-        `SELECT p.*, c.name as category_name FROM products p
-         LEFT JOIN categories c ON p.category_id = c.id
-         ${where} ORDER BY ${orderBy} LIMIT $${values.length + 1} OFFSET $${values.length + 2}`,
-        [...values, cap, offset]
-      ),
-      query(`SELECT COUNT(*) FROM products p ${where}`, values),
-    ]);
+    // Get count
+    const { rows: countRows } = await query(
+      `SELECT COUNT(*) as count FROM products p WHERE ${whereClause}`,
+      params
+    );
+
+    // Get paginated products
+    params.push(cap, offset);
+    const { rows: products } = await query(
+      `SELECT p.*, c.name as category_name FROM products p
+       LEFT JOIN categories c ON p.category_id = c.id
+       WHERE ${whereClause}
+       ORDER BY ${orderBy}
+       LIMIT $${params.length - 1} OFFSET $${params.length}`,
+      params
+    );
 
     return {
       products,
       total: parseInt(countRows[0].count),
-      page: parseInt(page),
+      page: pageNum,
       limit: cap,
       pages: Math.ceil(parseInt(countRows[0].count) / cap),
     };
