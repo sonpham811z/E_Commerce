@@ -15,7 +15,8 @@ function OrderSummary({
   discountInfo,
   onOrderSuccess,
   onOrderError,
-  showSubmitButton = false
+  showSubmitButton = false,
+  quantity = 1
 }) {
   const formatPrice = (price) => {
     if (externalFormatPrice) return externalFormatPrice(price);
@@ -147,10 +148,12 @@ function OrderSummary({
 
       {/* Extra Info */}
       <motion.div variants={itemVariants} className="text-xs text-gray-500 bg-gray-50 px-3 py-2 rounded-lg mt-1">
-        <div className="flex items-center gap-1 mb-0.5">
-          <TicketIcon className="text-blue-400" size={10} />
-          <span>Sử dụng mã WELCOME để được giảm 10% cho đơn hàng đầu tiên</span>
-        </div>
+        {quantity === 1 && (
+          <div className="flex items-center gap-1 mb-0.5">
+            <TicketIcon className="text-blue-400" size={10} />
+            <span>Sử dụng mã WELCOME để được giảm 10% cho đơn hàng đầu tiên</span>
+          </div>
+        )}
         <div className="flex items-center gap-1">
           <TicketIcon className="text-blue-400" size={10} />
           <span>Miễn phí vận chuyển cho đơn hàng từ 500.000₫</span>

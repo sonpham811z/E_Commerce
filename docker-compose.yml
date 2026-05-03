@@ -1,5 +1,8 @@
+version: "3.9"
+
 services:
-  # ─── Backend Services ──────────────────────────────────────────────────────────
+  # ─── Backend Services ─────────────────────────────────────────────
+
   auth-service:
     build:
       context: ./backend/auth-service
@@ -7,7 +10,7 @@ services:
     container_name: auth-service
     environment:
       DATABASE_URL: ${AUTH_DATABASE_URL:?Set AUTH_DATABASE_URL in .env for Neon}
-      DB_SSL: true
+      DB_SSL: "true"
     ports:
       - "3001:3001"
     networks:
@@ -21,7 +24,8 @@ services:
     container_name: ai-service
     environment:
       DATABASE_URL: ${AI_DATABASE_URL:?Set AI_DATABASE_URL in .env for Neon}
-      DB_SSL: true
+      GROQ_API_KEY: ${GROQ_API_KEY:?Set GROQ_API_KEY in .env}
+      DB_SSL: "true"
       AUTH_SERVICE_URL: http://auth-service:3001
       CORE_SERVICE_URL: http://core-service:3003
     ports:
@@ -40,7 +44,7 @@ services:
     container_name: core-service
     environment:
       DATABASE_URL: ${CORE_DATABASE_URL:?Set CORE_DATABASE_URL in .env for Neon}
-      DB_SSL: true
+      DB_SSL: "true"
       AUTH_SERVICE_URL: http://auth-service:3001
     ports:
       - "3003:3003"
@@ -51,11 +55,12 @@ services:
       - ecommerce-network
     restart: unless-stopped
 
-  # ─── Frontend ─────────────────────────────────────────────────────────────────
+  # ─── Frontend ────────────────────────────────────────────────────
+
   frontend:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile
+      context: ./Ecommerce_Website
+      dockerfile: docker/frontend/Dockerfile
     container_name: frontend
     environment:
       VITE_AUTH_SERVICE_URL: http://localhost:3001
@@ -70,6 +75,9 @@ services:
     networks:
       - ecommerce-network
     restart: unless-stopped
+
+# ─── Network ───────────────────────────────────────────────────────
+
 networks:
   ecommerce-network:
     driver: bridge

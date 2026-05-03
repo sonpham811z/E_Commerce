@@ -3,23 +3,29 @@ import Spinner from '../ui/Spinner';
 import { useGetFeaturedProducts } from '../hooks/useGetFeatureProducts';
 
 const CATEGORY_LABELS = {
-  laptop: 'Laptop nổi bật',
-  keyboard: 'Bàn phím nổi bật',
-  headset: 'Tai nghe nổi bật',
-  ssd: 'Ổ cứng di dộng nổi bật',
+  Laptop: 'Laptop nổi bật',
+  'Bàn phím': 'Bàn phím nổi bật',
+  'Tai nghe': 'Tai nghe nổi bật',
+  'Màn hình': 'Màn hình nổi bật',
+  'PC Gaming': 'PC Gaming nổi bật',
+  'Chuột': 'Chuột nổi bật',
 };
 
 function ProductFeatured() {
-  const laptopData = useGetFeaturedProducts('laptop');
-  const keyboardData = useGetFeaturedProducts('keyboard');
-  const headsetData = useGetFeaturedProducts('headset');
-  const ssdData = useGetFeaturedProducts('ssd');
+  const laptopData    = useGetFeaturedProducts('Laptop');
+  const keyboardData  = useGetFeaturedProducts('Bàn phím');
+  const headsetData   = useGetFeaturedProducts('Tai nghe');
+  const monitorData   = useGetFeaturedProducts('Màn hình');
+  const pcData        = useGetFeaturedProducts('PC Gaming');
+  const mouseData     = useGetFeaturedProducts('Chuột');
 
   const categoryList = [
-    { key: 'laptop', label: CATEGORY_LABELS.laptop, ...laptopData },
-    { key: 'keyboard', label: CATEGORY_LABELS.keyboard, ...keyboardData },
-    { key: 'headset', label: CATEGORY_LABELS.headset, ...headsetData },
-    { key: 'ssd', label: CATEGORY_LABELS.ssd, ...ssdData },
+    { key: 'Laptop',     label: CATEGORY_LABELS['Laptop'],     ...laptopData },
+    { key: 'PC Gaming',  label: CATEGORY_LABELS['PC Gaming'],  ...pcData },
+    { key: 'Màn hình',  label: CATEGORY_LABELS['Màn hình'],  ...monitorData },
+    { key: 'Bàn phím',  label: CATEGORY_LABELS['Bàn phím'],  ...keyboardData },
+    { key: 'Chuột',     label: CATEGORY_LABELS['Chuột'],     ...mouseData },
+    { key: 'Tai nghe',  label: CATEGORY_LABELS['Tai nghe'],  ...headsetData },
   ];
 
   return (

@@ -1,0 +1,277 @@
+[
+  {
+    "id": "laptop-001",
+    "name": "Laptop Gaming Asus TUF Gaming A15 FA507NU",
+    "price": 23990000,
+    "image_url": "/static/images/laptop-001.jpg",
+    "url": "https://gearvn.com/products/laptop-gaming-asus-tuf-gaming-a15-fa507nu",
+    "specs": {
+      "CPU": "AMD Ryzen 7 7735HS",
+      "RAM": "16GB DDR5 4800MHz",
+      "Storage": "512GB SSD NVMe PCIe Gen 4",
+      "Display": "15.6 inch FHD IPS 144Hz",
+      "GPU": "NVIDIA GeForce RTX 4050 6GB GDDR6",
+      "OS": "Windows 11 Home",
+      "Weight": "2.2 kg",
+      "Battery": "90WHrs"
+    },
+    "category": "Laptop Gaming",
+    "brand": "Asus",
+    "description": "Laptop Gaming Asus TUF Gaming A15 FA507NU sở hữu cấu hình mạnh mẽ với CPU AMD Ryzen 7 7735HS và card đồ họa NVIDIA GeForce RTX 4050, mang đến hiệu năng ấn tượng cho các tựa game AAA và các tác vụ đồ họa chuyên nghiệp."
+  },
+  {
+    "id": "laptop-002",
+    "name": "Laptop Gaming MSI Cyborg 15 A12VF",
+    "price": 25990000,
+    "image_url": "/static/images/laptop-002.jpg",
+    "url": "https://gearvn.com/products/laptop-gaming-msi-cyborg-15-a12vf",
+    "specs": {
+      "CPU": "Intel Core i7-12650H",
+      "RAM": "16GB DDR5 4800MHz",
+      "Storage": "512GB SSD NVMe PCIe Gen 4",
+      "Display": "15.6 inch FHD IPS 144Hz",
+      "GPU": "NVIDIA GeForce RTX 4060 8GB GDDR6",
+      "OS": "Windows 11 Home",
+      "Weight": "1.98 kg",
+      "Battery": "53.5WHrs"
+    },
+    "category": "Laptop Gaming",
+    "brand": "MSI",
+    "description": "Laptop Gaming MSI Cyborg 15 A12VF với thiết kế độc đáo cùng hiệu năng mạnh mẽ từ CPU Intel Core i7-12650H và card đồ họa NVIDIA GeForce RTX 4060, đáp ứng mọi nhu cầu gaming và đồ họa chuyên nghiệp."
+  },
+  {
+    "id": "laptop-003",
+    "name": "Laptop Gaming Acer Nitro 5 Eagle AN515-57",
+    "price": 19990000,
+    "image_url": "/static/images/laptop-003.jpg",
+    "url": "https://gearvn.com/products/laptop-gaming-acer-nitro-5-eagle-an515-57",
+    "specs": {
+      "CPU": "Intel Core i5-11400H",
+      "RAM": "8GB DDR4 3200MHz",
+      "Storage": "512GB SSD NVMe PCIe Gen 3",
+      "Display": "15.6 inch FHD IPS 144Hz",
+      "GPU": "NVIDIA GeForce RTX 3050 4GB GDDR6",
+      "OS": "Windows 11 Home",
+      "Weight": "2.3 kg",
+      "Battery": "57WHrs"
+    },
+    "category": "Laptop Gaming",
+    "brand": "Acer",
+    "description": "Laptop Gaming Acer Nitro 5 Eagle AN515-57 là lựa chọn tuyệt vời cho người mới bắt đầu với mức giá hợp lý, trang bị CPU Intel Core i5-11400H và card đồ họa NVIDIA GeForce RTX 3050, đủ sức chơi tốt các tựa game phổ biến hiện nay."
+  },
+  {
+    "id": "laptop-004",
+    "name": "Macbook Air M2 2022",
+    "price": 27990000,
+    "image_url": "/static/images/laptop-004.jpg",
+    "url": "https://gearvn.com/products/macbook-air-m2-2022",
+    "specs": {
+      "CPU": "Apple M2 8-core",
+      "RAM": "8GB Unified Memory",
+      "Storage": "256GB SSD",
+      "Display": "13.6 inch Liquid Retina",
+      "GPU": "Apple M2 8-core GPU",
+      "OS": "macOS Ventura",
+      "Weight": "1.24 kg",
+      "Battery": "52.6WHrs"
+    },
+    "category": "Laptop",
+    "brand": "Apple",
+    "description": "Macbook Air M2 2022 với thiết kế mỏng nhẹ, sang trọng cùng hiệu năng vượt trội từ chip M2 mới nhất của Apple, là lựa chọn hoàn hảo cho công việc văn phòng, thiết kế đồ họa và các tác vụ hàng ngày."
+  },
+  {
+    "id": "pc-001",
+    "name": "PC Gaming GVN PHANTOM i3060",
+    "price": 27990000,
+    "image_url": "/static/images/pc-001.jpg",
+    "url": "https://gearvn.com/products/pc-gaming-gvn-phantom-i3060",
+    "specs": {
+      "CPU": "Intel Core i5-13400F",
+      "RAM": "16GB DDR4 3200MHz",
+      "Storage": "500GB SSD NVMe PCIe Gen 4",
+      "GPU": "NVIDIA GeForce RTX 3060 12GB GDDR6",
+      "PSU": "Cooler Master MWE 650W 80 Plus Bronze",
+      "Case": "Deepcool CH510 MESH",
+      "Cooling": "Deepcool AK400",
+      "Mainboard": "MSI PRO B760M-A WIFI DDR4"
+    },
+    "category": "PC Gaming",
+    "brand": "GVN",
+    "description": "PC Gaming GVN PHANTOM i3060 được trang bị cấu hình mạnh mẽ với CPU Intel Core i5-13400F và card đồ họa NVIDIA GeForce RTX 3060 12GB, mang đến trải nghiệm chơi game mượt mà ở độ phân giải cao và các tác vụ đồ họa chuyên nghiệp."
+  },
+  {
+    "id": "pc-002",
+    "name": "PC Gaming GVN VIPER i4070",
+    "price": 42990000,
+    "image_url": "/static/images/pc-002.jpg",
+    "url": "https://gearvn.com/products/pc-gaming-gvn-viper-i4070",
+    "specs": {
+      "CPU": "Intel Core i7-13700KF",
+      "RAM": "32GB DDR5 5600MHz",
+      "Storage": "1TB SSD NVMe PCIe Gen 4",
+      "GPU": "NVIDIA GeForce RTX 4070 12GB GDDR6X",
+      "PSU": "Corsair RM850x 850W 80 Plus Gold",
+      "Case": "Corsair 4000D Airflow",
+      "Cooling": "NZXT Kraken X63 RGB",
+      "Mainboard": "MSI MAG Z690 TOMAHAWK WIFI DDR5"
+    },
+    "category": "PC Gaming",
+    "brand": "GVN",
+    "description": "PC Gaming GVN VIPER i4070 là cỗ máy gaming cao cấp với CPU Intel Core i7-13700KF và card đồ họa NVIDIA GeForce RTX 4070, đáp ứng mọi nhu cầu chơi game ở độ phân giải 2K, 4K và các tác vụ đồ họa, render video chuyên nghiệp."
+  },
+  {
+    "id": "monitor-001",
+    "name": "Màn hình Gaming Asus TUF VG27AQ",
+    "price": 8990000,
+    "image_url": "/static/images/monitor-001.jpg",
+    "url": "https://gearvn.com/products/man-hinh-gaming-asus-tuf-vg27aq",
+    "specs": {
+      "Size": "27 inch",
+      "Resolution": "2560 x 1440 (QHD)",
+      "Panel": "IPS",
+      "Refresh Rate": "165Hz",
+      "Response Time": "1ms MPRT",
+      "Connectivity": "HDMI 2.0, DisplayPort 1.2",
+      "HDR": "HDR10",
+      "Adaptive Sync": "G-Sync Compatible, FreeSync Premium"
+    },
+    "category": "Màn hình",
+    "brand": "Asus",
+    "description": "Màn hình Gaming Asus TUF VG27AQ với kích thước 27 inch, độ phân giải QHD, tần số quét 165Hz và công nghệ ELMB-SYNC, mang đến trải nghiệm chơi game mượt mà và hình ảnh sắc nét."
+  },
+  {
+    "id": "monitor-002",
+    "name": "Màn hình Gaming LG UltraGear 27GP850-B",
+    "price": 9490000,
+    "image_url": "/static/images/monitor-002.jpg",
+    "url": "https://gearvn.com/products/man-hinh-gaming-lg-ultragear-27gp850-b",
+    "specs": {
+      "Size": "27 inch",
+      "Resolution": "2560 x 1440 (QHD)",
+      "Panel": "Nano IPS",
+      "Refresh Rate": "180Hz (OC)",
+      "Response Time": "1ms GtG",
+      "Connectivity": "HDMI 2.0, DisplayPort 1.4",
+      "HDR": "HDR10",
+      "Adaptive Sync": "G-Sync Compatible, FreeSync Premium Pro"
+    },
+    "category": "Màn hình",
+    "brand": "LG",
+    "description": "Màn hình Gaming LG UltraGear 27GP850-B với công nghệ Nano IPS, độ phân giải QHD, tần số quét lên đến 180Hz và thời gian phản hồi siêu nhanh 1ms, là lựa chọn lý tưởng cho các game thủ chuyên nghiệp và những người làm việc với đồ họa."
+  },
+  {
+    "id": "keyboard-001",
+    "name": "Bàn phím cơ Logitech G PRO X",
+    "price": 3290000,
+    "image_url": "/static/images/keyboard-001.jpg",
+    "url": "https://gearvn.com/products/ban-phim-co-logitech-g-pro-x",
+    "specs": {
+      "Switch": "GX Blue Clicky",
+      "Kết nối": "Có dây USB",
+      "Đèn LED": "RGB 16.8 triệu màu",
+      "Phím multimedia": "Có",
+      "Kích thước": "Tenkeyless (TKL)",
+      "Keycap": "ABS Double-shot",
+      "Polling Rate": "1000Hz"
+    },
+    "category": "Bàn phím",
+    "brand": "Logitech",
+    "description": "Bàn phím cơ Logitech G PRO X với thiết kế tenkeyless nhỏ gọn, switch GX Blue Clicky có thể thay thế và đèn LED RGB 16.8 triệu màu, là lựa chọn lý tưởng cho các game thủ chuyên nghiệp."
+  },
+  {
+    "id": "keyboard-002",
+    "name": "Bàn phím cơ Akko 3087 v2 DS Midnight",
+    "price": 1290000,
+    "image_url": "/static/images/keyboard-002.jpg",
+    "url": "https://gearvn.com/products/ban-phim-co-akko-3087-v2-ds-midnight",
+    "specs": {
+      "Switch": "Akko CS Jelly Pink",
+      "Kết nối": "Có dây USB Type-C",
+      "Đèn LED": "Không",
+      "Phím multimedia": "Có (Fn)",
+      "Kích thước": "Tenkeyless (TKL)",
+      "Keycap": "PBT Double-shot",
+      "Polling Rate": "1000Hz"
+    },
+    "category": "Bàn phím",
+    "brand": "Akko",
+    "description": "Bàn phím cơ Akko 3087 v2 DS Midnight với thiết kế TKL, keycap PBT Double-shot chất lượng cao và switch Akko CS Jelly Pink mang lại cảm giác gõ êm ái, là lựa chọn tuyệt vời cho cả gaming và văn phòng với mức giá hợp lý."
+  },
+  {
+    "id": "mouse-001",
+    "name": "Chuột gaming Logitech G Pro X Superlight",
+    "price": 2990000,
+    "image_url": "/static/images/mouse-001.jpg",
+    "url": "https://gearvn.com/products/chuot-gaming-logitech-g-pro-x-superlight",
+    "specs": {
+      "DPI": "25600",
+      "Kết nối": "Wireless (Lightspeed)",
+      "Cảm biến": "HERO 25K",
+      "Switch": "Omron 20 triệu lần nhấn",
+      "Trọng lượng": "63g",
+      "Pin": "70 giờ",
+      "Nút bấm": "5 nút"
+    },
+    "category": "Chuột",
+    "brand": "Logitech",
+    "description": "Chuột gaming Logitech G Pro X Superlight với trọng lượng siêu nhẹ chỉ 63g, cảm biến HERO 25K chính xác và công nghệ không dây Lightspeed độc quyền, là lựa chọn hàng đầu của các game thủ chuyên nghiệp."
+  },
+  {
+    "id": "headphone-001",
+    "name": "Tai nghe Gaming HyperX Cloud Alpha",
+    "price": 1990000,
+    "image_url": "/static/images/headphone-001.jpg",
+    "url": "https://gearvn.com/products/tai-nghe-gaming-hyperx-cloud-alpha",
+    "specs": {
+      "Driver": "50mm Dual Chamber",
+      "Kết nối": "3.5mm",
+      "Microphone": "Có thể tháo rời",
+      "Trở kháng": "65 ohm",
+      "Tần số": "13Hz - 27.000Hz",
+      "Trọng lượng": "336g",
+      "Kiểu đeo": "Over-ear"
+    },
+    "category": "Tai nghe",
+    "brand": "HyperX",
+    "description": "Tai nghe Gaming HyperX Cloud Alpha với công nghệ driver dual chamber độc đáo mang đến chất âm chi tiết, chính xác, microphone có thể tháo rời và khung nhôm bền bỉ, là lựa chọn hàng đầu cho các game thủ đòi hỏi chất lượng âm thanh cao cấp."
+  },
+  {
+    "id": "ssd-001",
+    "name": "SSD Samsung 970 EVO Plus 1TB M.2 NVMe",
+    "price": 2790000,
+    "image_url": "/static/images/ssd-001.jpg",
+    "url": "https://gearvn.com/products/ssd-samsung-970-evo-plus-1tb-m2-nvme",
+    "specs": {
+      "Dung lượng": "1TB",
+      "Chuẩn giao tiếp": "NVMe PCIe Gen 3.0 x4",
+      "Tốc độ đọc": "3500 MB/s",
+      "Tốc độ ghi": "3300 MB/s",
+      "NAND": "V-NAND 3-bit MLC",
+      "Tuổi thọ": "600 TBW",
+      "Bảo hành": "5 năm"
+    },
+    "category": "Linh kiện",
+    "brand": "Samsung",
+    "description": "SSD Samsung 970 EVO Plus 1TB M.2 NVMe với tốc độ đọc/ghi ấn tượng, công nghệ V-NAND tiên tiến và độ bền cao, là giải pháp nâng cấp hoàn hảo cho laptop và PC, giúp tăng tốc đáng kể hiệu năng hệ thống."
+  },
+  {
+    "id": "gpu-001",
+    "name": "Card màn hình ASUS TUF Gaming GeForce RTX 4070 OC 12GB GDDR6X",
+    "price": 17990000,
+    "image_url": "/static/images/gpu-001.jpg",
+    "url": "https://gearvn.com/products/card-man-hinh-asus-tuf-gaming-geforce-rtx-4070-oc-12gb-gddr6x",
+    "specs": {
+      "GPU": "NVIDIA GeForce RTX 4070",
+      "VRAM": "12GB GDDR6X",
+      "Xung nhịp": "2610 MHz (OC Mode)",
+      "CUDA Cores": "5888",
+      "Giao tiếp": "PCIe 4.0",
+      "Cổng kết nối": "3x DisplayPort 1.4a, 1x HDMI 2.1",
+      "Nguồn đề nghị": "750W",
+      "Kích thước": "305 x 140 x 65 mm"
+    },
+    "category": "Linh kiện",
+    "brand": "Asus",
+    "description": "Card màn hình ASUS TUF Gaming GeForce RTX 4070 OC 12GB GDDR6X với kiến trúc NVIDIA Ada Lovelace mới nhất, công nghệ DLSS 3 và Ray Tracing thế hệ thứ 3, mang đến hiệu năng gaming tuyệt vời ở độ phân giải 1440p và 4K."
+  }
+] 

@@ -476,7 +476,7 @@ function UserHistory() {
                             // Map items if they exist
                             order.items.slice(0, 3).map((item, i) => {
                               // Get image URL from multiple possible sources
-                              const imageUrl = item.image_url || 
+                              const imageUrl = item.image_url || item.product_image ||
                                             (productDetails[item.product_id] && productDetails[item.product_id].image) || 
                                             (order.product_info && order.product_info.image) || 
                                             null;
@@ -489,6 +489,10 @@ function UserHistory() {
                                       <img 
                                         src={imageUrl} 
                                         alt={item.product_name} 
+                                        onError={(e) => {
+                                          e.target.onerror = null;
+                                          e.target.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22200%22%20viewBox%3D%220%200%20300%20200%22%3E%3Crect%20width%3D%22300%22%20height%3D%22200%22%20fill%3D%22%23f3f4f6%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2220%22%20fill%3D%22%239ca3af%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fsvg%3E';
+                                        }}
                                         className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-110" 
                                       />
                                     ) : (
@@ -527,6 +531,10 @@ function UserHistory() {
                                   <img 
                                     src={order.product_info.image} 
                                     alt={order.product_info.title} 
+                                    onError={(e) => {
+                                      e.target.onerror = null;
+                                      e.target.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22200%22%20viewBox%3D%220%200%20300%20200%22%3E%3Crect%20width%3D%22300%22%20height%3D%22200%22%20fill%3D%22%23f3f4f6%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2220%22%20fill%3D%22%239ca3af%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fsvg%3E';
+                                    }}
                                     className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-110" 
                                   />
                                 ) : (
@@ -604,7 +612,7 @@ function UserHistory() {
                               const productDetail = productDetails[item.product_id] || {};
                               
                               // Get image URL from multiple possible sources
-                              const imageUrl = item.image_url || 
+                              const imageUrl = item.image_url || item.product_image ||
                                              (productDetail && productDetail.image) || 
                                              (order.product_info && order.product_info.image) || 
                                              null;
@@ -615,7 +623,15 @@ function UserHistory() {
                                   <div className="sm:w-1/4">
                                     <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl h-48 flex items-center justify-center p-4 overflow-hidden shadow-inner">
                                       {imageUrl ? (
-                                        <img src={imageUrl} alt={item.product_name} className="max-w-full max-h-full object-contain" />
+                                        <img 
+                                          src={imageUrl} 
+                                          alt={item.product_name} 
+                                          onError={(e) => {
+                                            e.target.onerror = null;
+                                            e.target.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22200%22%20viewBox%3D%220%200%20300%20200%22%3E%3Crect%20width%3D%22300%22%20height%3D%22200%22%20fill%3D%22%23f3f4f6%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2220%22%20fill%3D%22%239ca3af%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fsvg%3E';
+                                          }}
+                                          className="max-w-full max-h-full object-contain" 
+                                        />
                                       ) : (
                                         <FaShoppingBag className="text-gray-300 text-5xl" />
                                       )}
@@ -720,7 +736,15 @@ function UserHistory() {
                               <div className="sm:w-1/4">
                                 <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl h-48 flex items-center justify-center p-4 overflow-hidden shadow-inner">
                                   {order.product_info.image ? (
-                                    <img src={order.product_info.image} alt={order.product_info.title} className="max-w-full max-h-full object-contain" />
+                                    <img 
+                                      src={order.product_info.image} 
+                                      alt={order.product_info.title} 
+                                      onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22200%22%20viewBox%3D%220%200%20300%20200%22%3E%3Crect%20width%3D%22300%22%20height%3D%22200%22%20fill%3D%22%23f3f4f6%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2220%22%20fill%3D%22%239ca3af%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fsvg%3E';
+                                      }}
+                                      className="max-w-full max-h-full object-contain" 
+                                    />
                                   ) : (
                                     <FaShoppingBag className="text-gray-300 text-5xl" />
                                   )}
@@ -895,46 +919,8 @@ function UserHistory() {
                   </div>
                   
                   <div className="mt-5 flex justify-end">
-                    {/* Status update dropdown and button */}
                     <div className="flex items-center gap-2 mr-auto">
-                      <select
-                        value={statusUpdates[order.id] || order.status}
-                        onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                        className="px-3 py-2.5 rounded-lg text-sm border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all"
-                      >
-                        {Object.entries(HISTORY_STATUS_FILTERS)
-                          .filter(([key]) => key !== 'all') // Exclude "all" option
-                          .map(([key, label]) => (
-                            <option key={key} value={key}>
-                              {label}
-                            </option>
-                          ))}
-                      </select>
-                      
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className={`${
-                          statusUpdates[order.id] && statusUpdates[order.id] !== order.status
-                            ? "bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white"
-                            : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                        } px-5 py-2.5 rounded-lg text-sm font-medium transition-all shadow-sm`}
-                        onClick={() => {
-                          if (statusUpdates[order.id] && statusUpdates[order.id] !== order.status) {
-                            handleUpdateStatus(order.id, statusUpdates[order.id]);
-                          }
-                        }}
-                        disabled={!statusUpdates[order.id] || statusUpdates[order.id] === order.status || updateStatusMutation.isLoading}
-                      >
-                        {updateStatusMutation.isLoading && updateStatusMutation.variables?.orderId === order.id ? (
-                          <span className="flex items-center">
-                            <div className="w-3 h-3 border-t-2 border-white border-r-2 rounded-full animate-spin mr-2"></div>
-                            Đang cập nhật...
-                          </span>
-                        ) : (
-                          "Cập nhật trạng thái"
-                        )}
-                      </motion.button>
+                      {/* Xoá chức năng cập nhật trạng thái đơn hàng của User */}
                     </div>
                     
                     <motion.button

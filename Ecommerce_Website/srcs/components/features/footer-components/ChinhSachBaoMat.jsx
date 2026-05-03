@@ -1,4 +1,4 @@
-const PrivacyPolicy = () => {
+const ChinhSachBaoMat = () => {
   return (
     <div className='max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 font-sans text-sm sm:text-base'>
       <h1 className='text-xl sm:text-2xl font-bold mb-4 sm:mb-6'>
@@ -162,4 +162,4 @@ const PrivacyPolicy = () => {
   );
 };
 
-export default PrivacyPolicy;
+export default ChinhSachBaoMat;

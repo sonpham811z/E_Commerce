@@ -4,6 +4,7 @@ import ProductInfo from '@/components/features/detail/ProductInfo';
 import ProductGallery from '@/components/features/detail/ProductGallery';
 import ProductDetails from '@/components/features/detail/ProductDetails';
 import ExpandSection from '@/components/features/detail/ExpandSection';
+import RelatedProducts from '@/components/features/detail/RelatedProducts';
 import Spinner from '@/components/ui/Spinner';
 import { getProductById } from '../services/apiProduct';
 import { convertKeysToCamelCase } from '../../utils/caseConverter';
@@ -71,6 +72,11 @@ const ProductDetailPage = () => {
       <div className='mt-8'>
         <ExpandSection product={product} />
       </div>
+
+      <RelatedProducts 
+        currentProductId={product.id} 
+        category={product.category || product.categoryName} 
+      />
     </main>
   );
 };

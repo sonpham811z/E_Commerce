@@ -13,39 +13,29 @@ export async function registerAddressForm({ addressData }) {
     } else {
       // Xử lý trường hợp chỉ có mã mà không có tên
       try {
-        const { data: provinceData } = await supabase
-          .from("provinces")
-          .select("name, full_name")
-          .eq("code", addressData.city)
-          .single();
+        const response = await fetch('/data.json');
+        const data = await response.json();
         
-        provinceName = provinceData?.full_name || provinceData?.name || addressData.city;
+        const province = data.find(p => p.level1_id === addressData.city);
+        if (province) {
+          provinceName = province.name;
+          
+          if (province.level2s) {
+            const district = province.level2s.find(d => d.level2_id === addressData.district);
+            if (district) {
+              districtName = district.name;
+              
+              if (district.level3s) {
+                const ward = district.level3s.find(w => w.level3_id === addressData.ward);
+                if (ward) {
+                  wardName = ward.name;
+                }
+              }
+            }
+          }
+        }
       } catch (err) {
-        console.error("Lỗi khi lấy tên tỉnh/thành phố:", err.message);
-      }
-      
-      try {
-        const { data: districtData } = await supabase
-          .from("districts")
-          .select("name, full_name")
-          .eq("code", addressData.district)
-          .single();
-        
-        districtName = districtData?.full_name || districtData?.name || addressData.district;
-      } catch (err) {
-        console.error("Lỗi khi lấy tên quận/huyện:", err.message);
-      }
-      
-      try {
-        const { data: wardData } = await supabase
-          .from("wards")
-          .select("name, full_name")
-          .eq("code", addressData.ward)
-          .single();
-        
-        wardName = wardData?.full_name || wardData?.name || addressData.ward;
-      } catch (err) {
-        console.error("Lỗi khi lấy tên phường/xã:", err.message);
+        console.error("Lỗi khi lấy tên địa chỉ:", err.message);
       }
     }
     

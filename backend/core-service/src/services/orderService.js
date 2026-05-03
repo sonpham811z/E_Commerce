@@ -113,7 +113,17 @@ class OrderService {
       throw err;
     }
 
-    if (user.role !== 'admin' && status === 'cancelled') {
+    if (user.role !== 'admin') {
+      if (status !== 'cancelled') {
+        const err = new Error('Access denied. Only admin can update order status.');
+        err.statusCode = 403;
+        throw err;
+      }
+      if (order.user_id !== user.id) {
+        const err = new Error('Access denied. You can only cancel your own orders.');
+        err.statusCode = 403;
+        throw err;
+      }
       if (!['pending', 'processing'].includes(order.status)) {
         const err = new Error('Order cannot be cancelled at this stage');
         err.statusCode = 400;
