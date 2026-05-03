@@ -2,7 +2,7 @@ const fs = require('fs');
 const { Client } = require('pg');
 const { v4: uuidv4 } = require('uuid');
 
-const DB_URL = "postgresql://neondb_owner:npg_0YspaXZPKi3H@ep-mute-sky-aowugm87-pooler.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require";
+const DB_URL = " "
 const CSV_FILE = "c:/cloud/E_Commerce/gearvn_products_transformed.csv";
 
 function getCategory(title) {
