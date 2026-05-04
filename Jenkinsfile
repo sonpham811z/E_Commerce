@@ -305,7 +305,7 @@ pipeline {
                     for (svc in ['auth-service', 'core-service', 'ai-service']) {
                         sh """
                             kubectl scale deployment/${svc}-${CURRENT_SLOT} \
-                                --replicas=0 -n ${AKS_NAMESPACE}
+                                --replicas=0 -n ${AKS_NAMESPACE} || true
                         """
                     }
                     echo "Old slot ${CURRENT_SLOT} scaled down"
