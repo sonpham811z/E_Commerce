@@ -358,21 +358,19 @@ VITE_CORE_SERVICE_URL=http://${ingressIP}/api
     // ══════════════════════════════════════════════
     // POST ACTIONS
     // ══════════════════════════════════════════════
-    post {
+post {
         success {
             echo "✅ Build #${BUILD_NUMBER} deployed successfully. Slot: ${env.NEW_SLOT}"
         }
         failure {
             script {
                 echo "❌ Build #${BUILD_NUMBER} failed! Rolling back..."
-                // Rollback: switch traffic về slot cũ
                 for (svc in ['auth-service', 'core-service', 'ai-service']) {
                     sh """
                         kubectl patch svc ${svc} -n ${AKS_NAMESPACE} \
                             -p '{"spec":{"selector":{"app":"${svc}","slot":"${env.CURRENT_SLOT}"}}}' || true
                     """
                 }
-                // Scale down slot lỗi
                 for (svc in ['auth-service', 'core-service', 'ai-service']) {
                     sh """
                         kubectl scale deployment/${svc}-${env.NEW_SLOT} \
@@ -382,11 +380,8 @@ VITE_CORE_SERVICE_URL=http://${ingressIP}/api
             }
         }
         always {
-            // Wrap trong node{} để tránh lỗi MissingContextVariableException
-            node {
-                sh 'docker system prune -f || true'
-                cleanWs()
-            }
+            sh 'docker system prune -f || true'
+            cleanWs()
         }
     }
 }
