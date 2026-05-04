@@ -8,9 +8,8 @@ services:
       context: ./backend/auth-service
       dockerfile: Dockerfile
     container_name: auth-service
-    environment:
-      DATABASE_URL: ${AUTH_DATABASE_URL:?Set AUTH_DATABASE_URL in .env for Neon}
-      DB_SSL: "true"
+    env_file:
+      - ./backend/auth-service/.env
     ports:
       - "3001:3001"
     networks:
@@ -22,10 +21,9 @@ services:
       context: ./backend/ai-service
       dockerfile: Dockerfile
     container_name: ai-service
+    env_file:
+      - ./backend/ai-service/.env
     environment:
-      DATABASE_URL: ${AI_DATABASE_URL:?Set AI_DATABASE_URL in .env for Neon}
-      GROQ_API_KEY: ${GROQ_API_KEY:?Set GROQ_API_KEY in .env}
-      DB_SSL: "true"
       AUTH_SERVICE_URL: http://auth-service:3001
       CORE_SERVICE_URL: http://core-service:3003
     ports:
@@ -42,9 +40,9 @@ services:
       context: ./backend/core-service
       dockerfile: Dockerfile
     container_name: core-service
+    env_file:
+      - ./backend/core-service/.env
     environment:
-      DATABASE_URL: ${CORE_DATABASE_URL:?Set CORE_DATABASE_URL in .env for Neon}
-      DB_SSL: "true"
       AUTH_SERVICE_URL: http://auth-service:3001
     ports:
       - "3003:3003"
@@ -61,11 +59,11 @@ services:
     build:
       context: ./Ecommerce_Website
       dockerfile: docker/frontend/Dockerfile
+      args:
+        VITE_AUTH_SERVICE_URL: http://localhost:3001
+        VITE_AI_SERVICE_URL: http://localhost:3002
+        VITE_CORE_SERVICE_URL: http://localhost:3003
     container_name: frontend
-    environment:
-      VITE_AUTH_SERVICE_URL: http://localhost:3001
-      VITE_AI_SERVICE_URL: http://localhost:3002
-      VITE_CORE_SERVICE_URL: http://localhost:3003
     ports:
       - "3000:80"
     depends_on:

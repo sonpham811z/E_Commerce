@@ -1,3 +1,4 @@
+import Logo1 from '@/assets/logo/Logo-1.png';
 import {
   IoChevronDownOutline,
   IoNotificationsOutline,
@@ -98,7 +99,7 @@ function Header() {
             onClick={() => navigate('/home')}
           >
             <img
-              src='/srcs/assets/logo/Logo-1.png'
+              src={Logo1}
               alt='GearVN Logo'
               className='w-20 sm:w-24 md:w-28 lg:w-30 h-8 sm:h-10 md:h-11 lg:h-12 object-contain'
             />

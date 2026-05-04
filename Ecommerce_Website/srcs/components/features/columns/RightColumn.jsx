@@ -1,4 +1,7 @@
 import { Link } from 'react-router-dom';
+import Banner5 from '@/assets/banner-phu/banner-5.webp';
+import Banner6 from '@/assets/banner-phu/banner-6.webp';
+import Banner7 from '@/assets/banner-phu/banner-7.webp';
 
 function RightColumn() {
   const links = [
@@ -6,11 +9,7 @@ function RightColumn() {
     '/san-pham?category=keyboard',
     '/san-pham?category=mouse',
   ];
-  const images = [
-    '/srcs/assets/banner-phu/banner-5.webp',
-    '/srcs/assets/banner-phu/banner-6.webp',
-    '/srcs/assets/banner-phu/banner-7.webp',
-  ];
+  const images = [Banner5, Banner6, Banner7];
 
   return (
     <div className='flex flex-col gap-3 sm:gap-4 md:gap-5 px-2 pt-2 h-full'>

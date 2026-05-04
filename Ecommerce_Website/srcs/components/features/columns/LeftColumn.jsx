@@ -1,4 +1,8 @@
 import { Link } from 'react-router-dom';
+import Banner1 from '@/assets/banner-phu/banner-1.webp';
+import Banner2 from '@/assets/banner-phu/banner-2.webp';
+import Banner3 from '@/assets/banner-phu/banner-3.webp';
+import Banner4 from '@/assets/banner-phu/banner-4.webp';
 
 function LeftColumn() {
   const links = [
@@ -7,12 +11,7 @@ function LeftColumn() {
     '/san-pham?category=cpu-amd-r9',
     '/san-pham?category=screen',
   ];
-  const images = [
-    '/srcs/assets/banner-phu/banner-1.webp',
-    '/srcs/assets/banner-phu/banner-2.webp',
-    '/srcs/assets/banner-phu/banner-3.webp',
-    '/srcs/assets/banner-phu/banner-4.webp',
-  ];
+  const images = [Banner1, Banner2, Banner3, Banner4];
 
   return (
     <div className='flex flex-col sm:flex-row gap-3 sm:gap-5 px-2'>

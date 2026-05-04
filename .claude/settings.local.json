@@ -6,7 +6,8 @@
       "Bash(grep -E \"\\\\.\\(jsx|js\\)$\")",
       "Bash(grep -E \"\\\\.\\(json|js|html|yml|yaml\\)$\")",
       "PowerShell(head *)",
-      "Bash(cd \"D:\\\\\\\\UIT\\\\\\\\điện toán\\\\\\\\Project_dtdm\\\\\\\\Ecommerce_Website\")"
+      "Bash(cd \"D:\\\\\\\\UIT\\\\\\\\điện toán\\\\\\\\Project_dtdm\\\\\\\\Ecommerce_Website\")",
+      "Bash(xargs cat *)"
     ]
   }
 }
