@@ -1,3 +1,6 @@
+# Non-sensitive, non-domain config shared across services.
+# ALLOWED_ORIGINS and payment URLs depend on APP_DOMAIN and are
+# injected by the Jenkins pipeline at deploy time — not stored here.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -5,6 +8,32 @@ metadata:
   namespace: ecommerce
 data:
   NODE_ENV: "production"
+  DB_SSL: "true"
+
+  # Service-to-service URLs (internal cluster DNS)
   AUTH_SERVICE_URL: "http://auth-service:3001"
   CORE_SERVICE_URL: "http://core-service:3003"
-  AI_SERVICE_URL: "http://ai-service:3002"
+  AI_SERVICE_URL:   "http://ai-service:3002"
+
+  # Auth
+  JWT_ACCESS_EXPIRES_IN:  "15m"
+  JWT_REFRESH_EXPIRES_IN: "7d"
+  BCRYPT_ROUNDS:          "12"
+
+  # Email
+  SMTP_HOST:   "smtp.gmail.com"
+  SMTP_PORT:   "587"
+  EMAIL_FROM:  "noreply@ecommerce.com"
+
+  # AI / Groq
+  GROQ_MODEL:      "llama3-8b-8192"
+  GROQ_MAX_TOKENS: "1024"
+  MAX_CHAT_HISTORY: "50"
+
+  # Pagination
+  DEFAULT_PAGE_SIZE: "20"
+  MAX_PAGE_SIZE:     "100"
+
+  # Rate limiting
+  RATE_LIMIT_WINDOW_MS: "900000"
+  RATE_LIMIT_MAX:       "100"

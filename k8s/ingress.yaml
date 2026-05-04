@@ -11,21 +11,38 @@ spec:
   rules:
     - http:
         paths:
-          # API routes — proxied to backend services
-          - path: /api/auth
+          # ── Backend routes ─────────────────────────────────────────────────
+          # Nginx ingress picks the longest matching prefix, so more-specific
+          # paths below always win over the /api catch-all, regardless of order.
+
+          # auth-service handles: /api/v1/auth/*
+          - path: /api/v1/auth
             pathType: Prefix
             backend:
               service:
                 name: auth-service
                 port:
                   number: 3001
-          - path: /api/ai
+
+          # ai-service handles: /api/v1/chat/* and /api/v1/recommendations/*
+          - path: /api/v1/chat
             pathType: Prefix
             backend:
               service:
                 name: ai-service
                 port:
                   number: 3002
+
+          - path: /api/v1/recommendations
+            pathType: Prefix
+            backend:
+              service:
+                name: ai-service
+                port:
+                  number: 3002
+
+          # core-service handles everything else under /api
+          # (products, orders, payments, categories)
           - path: /api
             pathType: Prefix
             backend:
@@ -33,7 +50,10 @@ spec:
                 name: core-service
                 port:
                   number: 3003
-          # Everything else → frontend SPA
+
+          # ── Frontend SPA ───────────────────────────────────────────────────
+          # Nginx inside the frontend container handles react-router paths
+          # via try_files, so no rewrite-target is needed here.
           - path: /
             pathType: Prefix
             backend:
