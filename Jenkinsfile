@@ -6,7 +6,7 @@ pipeline {
         ACR_NAME        = 'haadtechacr2026'
         ACR_REGISTRY    = "${ACR_NAME}.azurecr.io"
         AKS_NAMESPACE   = 'ecommerce'
-        RESOURCE_GROUP  = '<YOUR_RESOURCE_GROUP>'   // ← ĐỔI TÊN RESOURCE GROUP CỦA BẠN
+        RESOURCE_GROUP  = 'HAADTechRG'   // ← ĐỔI TÊN RESOURCE GROUP CỦA BẠN
         AKS_CLUSTER     = 'haadtech-aks'
         KEY_VAULT_NAME  = 'haadtechkv2026'
         WEBAPP_NAME     = 'haadtech-web-2026'
