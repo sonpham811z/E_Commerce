@@ -7,7 +7,9 @@
       "Bash(grep -E \"\\\\.\\(json|js|html|yml|yaml\\)$\")",
       "PowerShell(head *)",
       "Bash(cd \"D:\\\\\\\\UIT\\\\\\\\điện toán\\\\\\\\Project_dtdm\\\\\\\\Ecommerce_Website\")",
-      "Bash(xargs cat *)"
+      "Bash(xargs cat *)",
+      "Bash(Get-ChildItem -Path \"d:\\\\UIT\\\\điện toán\\\\Project_dtdm\\\\backend\" -Directory)",
+      "Bash(Select-Object Name)"
     ]
   }
 }

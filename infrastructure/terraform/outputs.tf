@@ -29,6 +29,25 @@ output "kube_config" {
   sensitive   = true
 }
 
+# ─── Key Vault ────────────────────────────────────────────────────────────────
+output "key_vault_uri" {
+  description = "Key Vault URI — use in Jenkins Azure Key Vault plugin config"
+  value       = azurerm_key_vault.kv.vault_uri
+}
+
+# ─── App Service ──────────────────────────────────────────────────────────────
+output "frontend_url" {
+  description = "Frontend App Service URL"
+  value       = "https://${azurerm_linux_web_app.frontend.default_hostname}"
+}
+
+# ─── Application Insights ─────────────────────────────────────────────────────
+output "app_insights_connection_string" {
+  description = "App Insights connection string — add to K8s ConfigMap"
+  value       = azurerm_application_insights.appinsights.connection_string
+  sensitive   = true
+}
+
 # ─── Misc ─────────────────────────────────────────────────────────────────────
 output "resource_group_name" {
   value = azurerm_resource_group.main.name

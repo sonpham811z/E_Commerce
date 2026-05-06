@@ -6,9 +6,9 @@ pipeline {
         ACR_NAME        = 'haadtechacr2026'
         ACR_REGISTRY    = "${ACR_NAME}.azurecr.io"
         AKS_NAMESPACE   = 'ecommerce'
-        RESOURCE_GROUP  = 'HAADTechRG'   // ← ĐỔI TÊN RESOURCE GROUP CỦA BẠN
+        RESOURCE_GROUP  = 'HAADTechRG_IS402'   // ← ĐỔI TÊN RESOURCE GROUP CỦA BẠN
         AKS_CLUSTER     = 'haadtech-aks'
-        KEY_VAULT_NAME  = 'haadtechkv2026'
+        KEY_VAULT_NAME  = 'haadtechkv2026IS402'
         WEBAPP_NAME     = 'haadtech-web-2026'
 
         // ── Build info ──
@@ -64,6 +64,10 @@ pipeline {
                     ).trim()
                     env.KV_JWT_SECRET = sh(
                         script: "az keyvault secret show --vault-name ${KEY_VAULT_NAME} --name jwt-secret --query value -o tsv",
+                        returnStdout: true
+                    ).trim()
+                    env.KV_JWT_REFRESH = sh(
+                        script: "az keyvault secret show --vault-name ${KEY_VAULT_NAME} --name jwt-refresh-secret --query value -o tsv",
                         returnStdout: true
                     ).trim()
                     env.KV_SMTP_USER = sh(
@@ -143,6 +147,7 @@ pipeline {
                             --namespace=${AKS_NAMESPACE} \
                             --from-literal=DATABASE_URL="\${AUTH_DB_URL}" \
                             --from-literal=JWT_SECRET="\${KV_JWT_SECRET}" \
+                            --from-literal=JWT_REFRESH_SECRET="\${KV_JWT_REFRESH}" \
                             --from-literal=SMTP_USER="\${KV_SMTP_USER}" \
                             --from-literal=SMTP_PASS="\${KV_SMTP_PASS}"
 
