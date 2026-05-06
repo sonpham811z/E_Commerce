@@ -1,50 +1,154 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: auth-service
+  name: auth-service-blue
   namespace: ecommerce
+  labels:
+    app: auth-service
+    slot: blue
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: auth-service
+      slot: blue
   template:
     metadata:
       labels:
         app: auth-service
+        slot: blue
     spec:
       containers:
-        - name: auth-service
-          image: ecommerceacr2026.azurecr.io/auth-service:latest
-          imagePullPolicy: Always
-          ports:
-            - containerPort: 3001
-          envFrom:
-            - configMapRef:
-                name: ecommerce-config
-            - secretRef:
-                name: auth-service-secrets
-          resources:
-            requests:
-              cpu: "100m"
-              memory: "128Mi"
-            limits:
-              cpu: "500m"
-              memory: "256Mi"
-          readinessProbe:
-            httpGet:
-              path: /health
-              port: 3001
-            initialDelaySeconds: 10
-            periodSeconds: 10
-            failureThreshold: 3
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 3001
-            initialDelaySeconds: 30
-            periodSeconds: 30
-            failureThreshold: 3
+      - name: auth-service
+        image: haadtechacr2026.azurecr.io/auth-service:blue
+        ports:
+        - containerPort: 3001
+        envFrom:
+        - configMapRef:
+            name: ecommerce-config
+        env:
+        - name: PORT
+          value: "3001"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: auth-secrets
+              key: DATABASE_URL
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: auth-secrets
+              key: JWT_SECRET
+        - name: SMTP_USER
+          valueFrom:
+            secretKeyRef:
+              name: auth-secrets
+              key: SMTP_USER
+        - name: SMTP_PASS
+          valueFrom:
+            secretKeyRef:
+              name: auth-secrets
+              key: SMTP_PASS
+        - name: JWT_REFRESH_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: auth-secrets
+              key: JWT_REFRESH_SECRET
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3001
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3001
+          initialDelaySeconds: 15
+          periodSeconds: 10
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service-green
+  namespace: ecommerce
+  labels:
+    app: auth-service
+    slot: green
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: auth-service
+      slot: green
+  template:
+    metadata:
+      labels:
+        app: auth-service
+        slot: green
+    spec:
+      containers:
+      - name: auth-service
+        image: haadtechacr2026.azurecr.io/auth-service:green
+        ports:
+        - containerPort: 3001
+        envFrom:
+        - configMapRef:
+            name: ecommerce-config
+        env:
+        - name: PORT
+          value: "3001"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: auth-secrets
+              key: DATABASE_URL
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: auth-secrets
+              key: JWT_SECRET
+        - name: SMTP_USER
+          valueFrom:
+            secretKeyRef:
+              name: auth-secrets
+              key: SMTP_USER
+        - name: SMTP_PASS
+          valueFrom:
+            secretKeyRef:
+              name: auth-secrets
+              key: SMTP_PASS
+        - name: JWT_REFRESH_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: auth-secrets
+              key: JWT_REFRESH_SECRET
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3001
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3001
+          initialDelaySeconds: 15
+          periodSeconds: 10
 ---
 apiVersion: v1
 kind: Service
@@ -54,6 +158,8 @@ metadata:
 spec:
   selector:
     app: auth-service
+    slot: blue
   ports:
-    - port: 3001
-      targetPort: 3001
+  - port: 3001
+    targetPort: 3001
+  type: ClusterIP

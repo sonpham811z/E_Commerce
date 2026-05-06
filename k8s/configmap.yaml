@@ -37,3 +37,11 @@ data:
   # Rate limiting
   RATE_LIMIT_WINDOW_MS: "900000"
   RATE_LIMIT_MAX:       "100"
+
+  # Database pool
+  DB_POOL_MAX: "10"
+  DB_POOL_MIN: "2"
+
+  # CORS
+  ALLOWED_ORIGINS: "http://haadtech-web-2026.azurewebsites.net"
+  FRONTEND_URL: "http://haadtech-web-2026.azurewebsites.net"

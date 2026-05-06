@@ -1,50 +1,128 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: core-service
+  name: core-service-blue
   namespace: ecommerce
+  labels:
+    app: core-service
+    slot: blue
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: core-service
+      slot: blue
   template:
     metadata:
       labels:
         app: core-service
+        slot: blue
     spec:
       containers:
-        - name: core-service
-          image: ecommerceacr2026.azurecr.io/core-service:latest
-          imagePullPolicy: Always
-          ports:
-            - containerPort: 3003
-          envFrom:
-            - configMapRef:
-                name: ecommerce-config
-            - secretRef:
-                name: core-service-secrets
-          resources:
-            requests:
-              cpu: "100m"
-              memory: "128Mi"
-            limits:
-              cpu: "500m"
-              memory: "256Mi"
-          readinessProbe:
-            httpGet:
-              path: /health
-              port: 3003
-            initialDelaySeconds: 10
-            periodSeconds: 10
-            failureThreshold: 3
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 3003
-            initialDelaySeconds: 30
-            periodSeconds: 30
-            failureThreshold: 3
+      - name: core-service
+        image: haadtechacr2026.azurecr.io/core-service:blue
+        ports:
+        - containerPort: 3003
+        envFrom:
+        - configMapRef:
+            name: ecommerce-config
+        env:
+        - name: PORT
+          value: "3003"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: core-secrets
+              key: DATABASE_URL
+        - name: STRIPE_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: core-secrets
+              key: STRIPE_SECRET_KEY
+        - name: AUTH_SERVICE_URL
+          value: "http://auth-service:3001"
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3003
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3003
+          initialDelaySeconds: 15
+          periodSeconds: 10
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: core-service-green
+  namespace: ecommerce
+  labels:
+    app: core-service
+    slot: green
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: core-service
+      slot: green
+  template:
+    metadata:
+      labels:
+        app: core-service
+        slot: green
+    spec:
+      containers:
+      - name: core-service
+        image: haadtechacr2026.azurecr.io/core-service:green
+        ports:
+        - containerPort: 3003
+        envFrom:
+        - configMapRef:
+            name: ecommerce-config
+        env:
+        - name: PORT
+          value: "3003"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: core-secrets
+              key: DATABASE_URL
+        - name: STRIPE_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: core-secrets
+              key: STRIPE_SECRET_KEY
+        - name: AUTH_SERVICE_URL
+          value: "http://auth-service:3001"
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3003
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3003
+          initialDelaySeconds: 15
+          periodSeconds: 10
 ---
 apiVersion: v1
 kind: Service
@@ -54,6 +132,8 @@ metadata:
 spec:
   selector:
     app: core-service
+    slot: blue
   ports:
-    - port: 3003
-      targetPort: 3003
+  - port: 3003
+    targetPort: 3003
+  type: ClusterIP
