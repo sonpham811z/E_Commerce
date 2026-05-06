@@ -44,6 +44,10 @@ app.get('/health', (req, res) => {
   });
 });
 
+app.get('/healthy', (req, res) => {
+  res.json({status: 'ok', version: 'v2.0 - blue green dmeo'})
+})
+
 app.use('*', (req, res) => {
   res.status(404).json({ success: false, error: 'Route not found' });
 });
