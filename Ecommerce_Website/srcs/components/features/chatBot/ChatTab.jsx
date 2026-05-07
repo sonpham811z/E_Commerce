@@ -5,10 +5,10 @@ import { ChatHeader } from './ChatHeader';
 import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
 
-// Sử dụng cổng 8000 cho dịch vụ ChatBot
-const API_BASE_URL = 'http://127.0.0.1:8000';
+// Kết nối qua Node.js ai-service (port 3002) - proxy đến Python FastAPI
+const API_BASE_URL = 'http://localhost:3002';
 // Fallback URL nếu cổng chính không hoạt động
-const FALLBACK_API_URL = 'http://localhost:8000';
+const FALLBACK_API_URL = 'http://127.0.0.1:3002';
 
 // Create a function to check if ChatBot service is running
 const testChatbotConnection = async (url) => {
@@ -31,7 +31,6 @@ export default function ChatTab({ onClose }) {
     },
   ]);
   const [inputValue, setInputValue] = useState('');
-  const [model, setModel] = useState('deepseek');
   const [loading, setLoading] = useState(false);
   const [apiStatus, setApiStatus] = useState('checking');
   const messagesEndRef = useRef(null);
@@ -90,17 +89,6 @@ export default function ChatTab({ onClose }) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const mapModelName = (model) => {
-    const modelMap = {
-      llama3: 'llama3',
-      llama2: 'llama2',
-      mixtral: 'mixtral',
-      gemma: 'gemma',
-      qwen: 'qwen',
-      deepseek: 'deepseek',
-    };
-    return modelMap[model] || model;
-  };
 
   const sendMessage = async () => {
     if (!inputValue.trim() || loading) return;
@@ -113,22 +101,18 @@ export default function ChatTab({ onClose }) {
     console.log(`Sending query to chatbot API at ${activeApiUrl}`);
 
     try {
-      // Use FormData for the request
-      const formData = new FormData();
-      formData.append('query', inputValue.trim());
-      formData.append('model', mapModelName(model));
-
-      console.log('Sending form data:', {
+      const requestData = {
         query: inputValue.trim(),
-        model: mapModelName(model),
-      });
+      };
+
+      console.log('Sending request:', requestData);
 
       const response = await axios({
         method: 'post',
         url: `${activeApiUrl}/direct-query`,
-        data: formData,
-        headers: { 'Content-Type': 'multipart/form-data' },
-        timeout: 30000, // Timeout sau 30 giây
+        data: requestData,
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 120000, // Timeout sau 120 giây (AI cần thời gian xử lý)
       });
 
       // Log the response
@@ -282,39 +266,6 @@ export default function ChatTab({ onClose }) {
         </button>
       </div>
 
-      <div className='flex items-center justify-between mt-3 px-4 gap-2'>
-        <div className='relative w-full'>
-          <select
-            className='w-full p-2.5 pl-4 pr-10 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700 appearance-none focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent shadow-sm transition'
-            value={model}
-            onChange={(e) => setModel(e.target.value)}
-            disabled={loading}
-          >
-            <option value='llama3'>LLaMA3 - Mới nhất</option>
-            <option value='llama2'>LLaMA2</option>
-            <option value='mixtral'>Mixtral</option>
-            <option value='gemma'>Gemma</option>
-            <option value='qwen'>Qwen</option>
-            <option value='deepseek'>DeepSeek</option>
-          </select>
-          <div className='absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none'>
-            <svg
-              className='w-4 h-4 text-gray-400'
-              fill='none'
-              stroke='currentColor'
-              viewBox='0 0 24 24'
-              xmlns='http://www.w3.org/2000/svg'
-            >
-              <path
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                strokeWidth='2'
-                d='M19 9l-7 7-7-7'
-              ></path>
-            </svg>
-          </div>
-        </div>
-      </div>
 
       {apiStatus === 'checking' && (
         <div className='bg-red-50 border-l-4 border-red-500 text-red-700 px-4 py-2 mx-4 rounded mt-2 text-sm animate-pulse'>

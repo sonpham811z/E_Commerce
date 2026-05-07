@@ -1,0 +1,17 @@
+fastapi
+uvicorn[standard]
+langchain
+langchain-openai
+langchain-groq
+langchain-chroma
+langchain_community
+faiss-cpu
+transformers
+python-dotenv
+dotenv
+langchain-core
+sentence-transformers
+requests
+chromadb
+pydantic
+python-multipart
