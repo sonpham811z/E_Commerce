@@ -38,7 +38,7 @@ class ProductModel {
     return rows[0] || null;
   }
 
-  static async list({ page = DEFAULT_PAGE, limit = DEFAULT_LIMIT, category, search, min_price, max_price, sort, featured, is_active = true } = {}) {
+  static async list({ page = DEFAULT_PAGE, limit = DEFAULT_LIMIT, category, search, min_price, max_price, color, specs, sort, featured, is_active = true } = {}) {
     const cap = Math.min(limit, MAX_LIMIT);
     const pageNum = Math.max(parseInt(page) || DEFAULT_PAGE, 1);
     const offset = (pageNum - 1) * cap;
@@ -73,6 +73,22 @@ class ProductModel {
     if (max_price) {
       params.push(parseFloat(max_price));
       conditions.push(`p.price <= $${params.length}`);
+    }
+
+    if (color) {
+      params.push(`%${color}%`);
+      conditions.push(`(p.title ILIKE $${params.length} OR p.description ILIKE $${params.length} OR p.specs::text ILIKE $${params.length})`);
+    }
+
+    if (specs) {
+      const specList = typeof specs === 'string' ? specs.split(',') : specs;
+      for (const spec of specList) {
+        const s = spec.trim();
+        if (s) {
+          params.push(`%${s}%`);
+          conditions.push(`(p.title ILIKE $${params.length} OR p.description ILIKE $${params.length} OR p.specs::text ILIKE $${params.length})`);
+        }
+      }
     }
 
     if (search) {
@@ -162,11 +178,43 @@ class ProductModel {
   }
 
   static async suggestions(term, limit = 5) {
+    const SEARCH_ALIASES = {
+      'ổ cứng': ['ssd', 'hdd', 'storage', 'ổ cứng'],
+      'ssd': ['ssd', 'ổ cứng', 'storage'],
+      'hdd': ['hdd', 'ổ cứng', 'storage'],
+      'vga': ['vga', 'card màn hình', 'đồ họa'],
+      'card đồ họa': ['vga', 'card màn hình', 'đồ họa'],
+      'tản nhiệt': ['tản nhiệt', 'cooler', 'aio'],
+      'bàn phím': ['bàn phím', 'keyboard'],
+      'chuột': ['chuột', 'mouse'],
+      'tai nghe': ['tai nghe', 'headphone', 'headset'],
+    };
+
+    const termLower = term.toLowerCase().trim();
+    const searchTerms = [termLower];
+    if (SEARCH_ALIASES[termLower]) {
+      searchTerms.push(...SEARCH_ALIASES[termLower]);
+    }
+
+    const conditions = [];
+    const params = [];
+    let paramIdx = 1;
+
+    for (const t of searchTerms) {
+      const like = `%${t}%`;
+      params.push(like);
+      conditions.push(`(title ILIKE $${paramIdx} OR brand ILIKE $${paramIdx} OR category ILIKE $${paramIdx} OR description ILIKE $${paramIdx})`);
+      paramIdx++;
+    }
+
+    params.push(limit);
+    const whereClause = conditions.join(' OR ');
+
     const { rows } = await query(
-      `SELECT id, title, category, image FROM products
-       WHERE title ILIKE $1 AND is_active = true
-       ORDER BY rating DESC LIMIT $2`,
-      [`${term}%`, limit]
+      `SELECT id, title, category, brand, image, price, sale_price, original_price FROM products
+       WHERE (${whereClause}) AND is_active = true
+       ORDER BY rating DESC LIMIT $${paramIdx}`,
+      params
     );
     return rows;
   }
