@@ -333,9 +333,9 @@ pipeline {
 
                         // Tạo .env cho Vite build
                         writeFile file: '.env', text: """
-VITE_AUTH_SERVICE_URL=http://${ingressIP}/api/auth
-VITE_AI_SERVICE_URL=http://${ingressIP}/api/ai
-VITE_CORE_SERVICE_URL=http://${ingressIP}/api
+VITE_AUTH_SERVICE_URL=https://api.haadtech.shop/api/auth
+VITE_AI_SERVICE_URL=https://api.haadtech.shop/api/ai
+VITE_CORE_SERVICE_URL=https://api.haadtech.shop/api
 """
                         sh 'npm ci'
                         sh 'npm run build'

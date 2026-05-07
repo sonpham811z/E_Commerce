@@ -4,16 +4,26 @@ metadata:
   name: ecommerce-ingress
   namespace: ecommerce
   annotations:
+    # Gọi thằng ClusterIssuer ở bước 2 ra làm việc
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
     nginx.ingress.kubernetes.io/proxy-body-size: "10m"
     nginx.ingress.kubernetes.io/rewrite-target: /$2
     nginx.ingress.kubernetes.io/use-regex: "true"
+    # Cập nhật CORS cho domain mới
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://haadtech.shop"
     nginx.ingress.kubernetes.io/enable-cors: "true"
-    nginx.ingress.kubernetes.io/cors-allow-origin: "http://haadtech-web-IS402.azurewebsites.net"
 spec:
   ingressClassName: nginx
+  # Khai báo xài SSL (TLS)
+  tls:
+  - hosts:
+    - api.haadtech.shop
+    secretName: api-haadtech-tls
   rules:
-  - http:
+  # Ép ông gác cổng chỉ nhận khách từ đường link này
+  - host: api.haadtech.shop
+    http:
       paths:
       - path: /api/auth(/|$)(.*)
         pathType: ImplementationSpecific
