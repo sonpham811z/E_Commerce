@@ -6,7 +6,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libgomp1 \
     sqlite3 \
-    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies first (layer caching)
