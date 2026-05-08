@@ -1,30 +1,30 @@
 FROM python:3.11-slim
 WORKDIR /app
 
-# libgomp1 required by faiss-cpu, sqlite3 required by chromadb
+# Install build tools + libgomp (required by faiss-cpu) + sqlite3 (required by chromadb)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libgomp1 \
     sqlite3 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python deps first (layer cache)
+# Install Python dependencies first (layer caching)
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY . .
 
-# Writable dirs for vector store, data, logs
+# Create writable directories for vector store, data, and logs
 RUN mkdir -p chatbot/vectorstore/chromadb chatbot/data/raw logs \
     && chmod -R 777 chatbot/vectorstore chatbot/data logs
 
 RUN groupadd -r appgroup && useradd -r -g appgroup appuser
 USER appuser
 
-# Run from chatbot/ so "from api import ..." and "from suggest import ..." resolve correctly:
-#   - chatbot/api/  is found via cwd in sys.path
-#   - suggest/      is found via _parent_dir (/app) added in main.py
+# Run uvicorn from the chatbot/ subdirectory so relative imports resolve correctly:
+# - "from api import ..." resolves to chatbot/api/
+# - "from suggest import ..." resolves to ../suggest/ via sys.path added in main.py
 WORKDIR /app/chatbot
 
 EXPOSE 8000

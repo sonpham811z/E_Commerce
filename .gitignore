@@ -73,6 +73,16 @@ k8s/secrets*.yaml
 kubeconfig
 *.kubeconfig
 
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+*.egg-info/
+dist/
+.mypy_cache/
+
 # ── Misc ──────────────────────────────────────────────────────────────────────
 .cache/
 tmp/

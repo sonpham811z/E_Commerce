@@ -140,6 +140,8 @@ pipeline {
                     // Tạo/cập nhật ConfigMap (non-secret values)
                     sh "kubectl apply -f k8s/configmap.yaml"
 
+                    sh "kubectl apply -f k8s/ingress.yaml"
+
                     // Xóa secrets cũ + tạo mới (đảm bảo giá trị mới nhất từ Key Vault)
                     sh """
                         kubectl delete secret auth-secrets -n ${AKS_NAMESPACE} --ignore-not-found
@@ -258,7 +260,7 @@ pipeline {
                     }
                     sh """
                         kubectl rollout status deployment/ai-service-${NEW_SLOT} \
-                            -n ${AKS_NAMESPACE} --timeout=300s
+                            -n ${AKS_NAMESPACE} --timeout=500s
                     """
                 }
             }
