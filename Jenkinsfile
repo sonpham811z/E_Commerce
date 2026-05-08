@@ -288,8 +288,8 @@ pipeline {
                         script: "kubectl get pod -n ${AKS_NAMESPACE} -l app=ai-service,slot=${NEW_SLOT} -o jsonpath='{.items[0].metadata.name}'",
                         returnStdout: true
                     ).trim()
-                    // AI service Python FastAPI — dùng wget gọi HTTP, không dùng python binary
-                    sh "kubectl exec ${aiPod} -n ${AKS_NAMESPACE} -- wget -qO- http://localhost:8000/health || exit 1"
+                    // ĐỔI wget → curl vì Python image không có wget
+                    sh "kubectl exec ${aiPod} -n ${AKS_NAMESPACE} -- curl -sf http://localhost:8000/health || exit 1"
         
                     echo "✅ Smoke tests passed on ${NEW_SLOT} slot"
                 }
