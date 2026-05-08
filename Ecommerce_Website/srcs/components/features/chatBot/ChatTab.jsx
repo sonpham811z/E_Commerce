@@ -107,7 +107,7 @@ export default function ChatTab({ onClose }) {
 
       const response = await axios({
         method: 'post',
-        url: `${activeApiUrl}/api/chat`,
+        url: `${activeApiUrl}/chat`,
         data: requestData,
         headers: { 'Content-Type': 'application/json' },
         timeout: 120000,
