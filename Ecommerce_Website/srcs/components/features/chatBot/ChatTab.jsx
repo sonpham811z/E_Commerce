@@ -6,9 +6,9 @@ import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
 
 // Kết nối qua Node.js ai-service (port 3002) - proxy đến Python FastAPI
-const API_BASE_URL = 'http://localhost:3002';
-// Fallback URL nếu cổng chính không hoạt động
-const FALLBACK_API_URL = 'http://127.0.0.1:3002';
+// Dùng biến môi trường Vite — ĐÚNG
+const API_BASE_URL = import.meta.env.VITE_AI_SERVICE_URL || 'http://localhost:3002';
+const FALLBACK_API_URL = import.meta.env.VITE_AI_SERVICE_URL || 'http://127.0.0.1:3002';
 
 // Create a function to check if ChatBot service is running
 const testChatbotConnection = async (url) => {
