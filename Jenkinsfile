@@ -260,7 +260,7 @@ pipeline {
                     }
                     sh """
                         kubectl rollout status deployment/ai-service-${NEW_SLOT} \
-                            -n ${AKS_NAMESPACE} --timeout=300s
+                            -n ${AKS_NAMESPACE} --timeout=500s
                     """
                 }
             }
