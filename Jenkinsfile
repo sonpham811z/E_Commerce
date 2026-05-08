@@ -290,7 +290,7 @@ pipeline {
                         script: "kubectl get pod -n ${AKS_NAMESPACE} -l app=ai-service,slot=${NEW_SLOT} -o jsonpath='{.items[0].metadata.name}'",
                         returnStdout: true
                     ).trim()
-                    sh "kubectl exec ${aiPod} -n ${AKS_NAMESPACE} -- python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\" || exit 1"
+                    sh "kubectl exec ${aiPod} -n ${AKS_NAMESPACE} -- wget -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\" || exit 1"
 
                     echo "✅ Smoke tests passed on ${NEW_SLOT} slot"
                 }
