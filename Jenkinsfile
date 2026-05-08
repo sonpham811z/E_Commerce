@@ -140,6 +140,8 @@ pipeline {
                     // Tạo/cập nhật ConfigMap (non-secret values)
                     sh "kubectl apply -f k8s/configmap.yaml"
 
+                    sh "kubectl apply -f k8s/ingress.yaml"
+
                     // Xóa secrets cũ + tạo mới (đảm bảo giá trị mới nhất từ Key Vault)
                     sh """
                         kubectl delete secret auth-secrets -n ${AKS_NAMESPACE} --ignore-not-found
@@ -336,8 +338,15 @@ pipeline {
             steps {
                 dir('Ecommerce_Website') {
                     script {
-                        // Dùng domain thật api.haadtech.shop (HTTPS qua Ingress + cert-manager)
-                        writeFile file: '.env', text: """VITE_AUTH_SERVICE_URL=https://api.haadtech.shop/api/auth
+                        // Lấy Ingress External IP
+                        def ingressIP = sh(
+                            script: "kubectl get ingress ecommerce-ingress -n ${AKS_NAMESPACE} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'",
+                            returnStdout: true
+                        ).trim()
+
+                        // Tạo .env cho Vite build
+                        writeFile file: '.env', text: """
+VITE_AUTH_SERVICE_URL=https://api.haadtech.shop/api/auth
 VITE_AI_SERVICE_URL=https://api.haadtech.shop/api/ai
 VITE_CORE_SERVICE_URL=https://api.haadtech.shop/api
 """
