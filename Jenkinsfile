@@ -272,26 +272,25 @@ pipeline {
         stage('Smoke Test') {
             steps {
                 script {
-                    // Test health endpoint trực tiếp trong pod
                     def authPod = sh(
                         script: "kubectl get pod -n ${AKS_NAMESPACE} -l app=auth-service,slot=${NEW_SLOT} -o jsonpath='{.items[0].metadata.name}'",
                         returnStdout: true
                     ).trim()
                     sh "kubectl exec ${authPod} -n ${AKS_NAMESPACE} -- wget -qO- http://localhost:3001/health || exit 1"
-
+        
                     def corePod = sh(
                         script: "kubectl get pod -n ${AKS_NAMESPACE} -l app=core-service,slot=${NEW_SLOT} -o jsonpath='{.items[0].metadata.name}'",
                         returnStdout: true
                     ).trim()
                     sh "kubectl exec ${corePod} -n ${AKS_NAMESPACE} -- wget -qO- http://localhost:3003/health || exit 1"
-
-                    // AI service: Python FastAPI trên port 8000
+        
                     def aiPod = sh(
                         script: "kubectl get pod -n ${AKS_NAMESPACE} -l app=ai-service,slot=${NEW_SLOT} -o jsonpath='{.items[0].metadata.name}'",
                         returnStdout: true
                     ).trim()
-                    sh "kubectl exec ${aiPod} -n ${AKS_NAMESPACE} -- wget -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\" || exit 1"
-
+                    // AI service Python FastAPI — dùng wget gọi HTTP, không dùng python binary
+                    sh "kubectl exec ${aiPod} -n ${AKS_NAMESPACE} -- wget -qO- http://localhost:8000/health || exit 1"
+        
                     echo "✅ Smoke tests passed on ${NEW_SLOT} slot"
                 }
             }
