@@ -17,7 +17,8 @@
   "main": "index.js",
   "scripts": {
     "start": "vite",
-    "dev": "vite",
+    "kill-ports": "powershell -Command \"3001,3002,3003,5173 | ForEach-Object { $port = $_; $p = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique; if ($p) { $p | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue; Write-Host 'Killed PID' $_ 'on port' $port } } }\"",
+    "dev": "npm run kill-ports && concurrently -n \"FRONTEND,AUTH,CORE,AI\" -c \"green,cyan,yellow,blue\" \"vite\" \"cd ../backend/auth-service && npm run dev\" \"cd ../backend/core-service && npm run dev\" \"cd ../backend/ai-service && npm run dev\"",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
