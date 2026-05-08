@@ -22,13 +22,13 @@ spec:
       - name: ai-service
         image: haadtechacr2026.azurecr.io/ai-service:blue
         ports:
-        - containerPort: 3002
+        - containerPort: 8000
         envFrom:
         - configMapRef:
             name: ecommerce-config
         env:
         - name: PORT
-          value: "3002"
+          value: "8000"
         - name: DATABASE_URL
           valueFrom:
             secretKeyRef:
@@ -46,20 +46,20 @@ spec:
         resources:
           requests:
             cpu: 50m
-            memory: 64Mi
+            memory: 1536Mi
           limits:
             cpu: 200m
-            memory: 256Mi
+            memory: 2048Mi
         readinessProbe:
           httpGet:
             path: /health
-            port: 3002
+            port: 8000
           initialDelaySeconds: 10
           periodSeconds: 5
         livenessProbe:
           httpGet:
             path: /health
-            port: 3002
+            port: 8000
           initialDelaySeconds: 15
           periodSeconds: 10
 ---
@@ -87,13 +87,13 @@ spec:
       - name: ai-service
         image: haadtechacr2026.azurecr.io/ai-service:green
         ports:
-        - containerPort: 3002
+        - containerPort: 8000
         envFrom:
         - configMapRef:
             name: ecommerce-config
         env:
         - name: PORT
-          value: "3002"
+          value: "8000"
         - name: DATABASE_URL
           valueFrom:
             secretKeyRef:
@@ -111,20 +111,20 @@ spec:
         resources:
           requests:
             cpu: 50m
-            memory: 64Mi
+            memory: 1536Mi
           limits:
             cpu: 200m
-            memory: 256Mi
+            memory: 2048Mi
         readinessProbe:
           httpGet:
             path: /health
-            port: 3002
+            port: 8000
           initialDelaySeconds: 10
           periodSeconds: 5
         livenessProbe:
           httpGet:
             path: /health
-            port: 3002
+            port: 8000
           initialDelaySeconds: 15
           periodSeconds: 10
 ---
