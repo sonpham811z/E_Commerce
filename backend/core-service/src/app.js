@@ -1,3 +1,13 @@
+if (process.env.APPLICATIONINSIGHTS_CONNECTION_STRING) {
+  const appInsights = require('applicationinsights');
+  appInsights.setup(process.env.APPLICATIONINSIGHTS_CONNECTION_STRING)
+    .setAutoCollectRequests(true)
+    .setAutoCollectExceptions(true)
+    .setAutoCollectDependencies(true)
+    .start();
+}
+
+
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
