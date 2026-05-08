@@ -249,13 +249,17 @@ pipeline {
                         """
                     }
 
-                    // Chờ tất cả pods ready
-                    for (svc in ['auth-service', 'core-service', 'ai-service']) {
+                    // Chờ tất cả pods ready (AI service cần 180s vì load model Python)
+                    for (svc in ['auth-service', 'core-service']) {
                         sh """
                             kubectl rollout status deployment/${svc}-${NEW_SLOT} \
                                 -n ${AKS_NAMESPACE} --timeout=120s
                         """
                     }
+                    sh """
+                        kubectl rollout status deployment/ai-service-${NEW_SLOT} \
+                            -n ${AKS_NAMESPACE} --timeout=300s
+                    """
                 }
             }
         }
@@ -278,6 +282,13 @@ pipeline {
                         returnStdout: true
                     ).trim()
                     sh "kubectl exec ${corePod} -n ${AKS_NAMESPACE} -- wget -qO- http://localhost:3003/health || exit 1"
+
+                    // AI service: Python FastAPI trên port 8000
+                    def aiPod = sh(
+                        script: "kubectl get pod -n ${AKS_NAMESPACE} -l app=ai-service,slot=${NEW_SLOT} -o jsonpath='{.items[0].metadata.name}'",
+                        returnStdout: true
+                    ).trim()
+                    sh "kubectl exec ${aiPod} -n ${AKS_NAMESPACE} -- python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\" || exit 1"
 
                     echo "✅ Smoke tests passed on ${NEW_SLOT} slot"
                 }
@@ -325,17 +336,10 @@ pipeline {
             steps {
                 dir('Ecommerce_Website') {
                     script {
-                        // Lấy Ingress External IP
-                        def ingressIP = sh(
-                            script: "kubectl get ingress ecommerce-ingress -n ${AKS_NAMESPACE} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'",
-                            returnStdout: true
-                        ).trim()
-
-                        // Tạo .env cho Vite build
-                        writeFile file: '.env', text: """
-VITE_AUTH_SERVICE_URL=http://${ingressIP}/api/auth
-VITE_AI_SERVICE_URL=http://${ingressIP}/api/ai
-VITE_CORE_SERVICE_URL=http://${ingressIP}/api
+                        // Dùng domain thật api.haadtech.shop (HTTPS qua Ingress + cert-manager)
+                        writeFile file: '.env', text: """VITE_AUTH_SERVICE_URL=https://api.haadtech.shop/api/auth
+VITE_AI_SERVICE_URL=https://api.haadtech.shop/api/ai
+VITE_CORE_SERVICE_URL=https://api.haadtech.shop/api
 """
                         sh 'npm ci'
                         sh 'npm run build'

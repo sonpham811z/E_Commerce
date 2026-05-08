@@ -42,3 +42,11 @@ API_HOST = os.getenv("API_HOST", "0.0.0.0")
 API_PORT = int(os.getenv("API_PORT", "8000"))
 
 STREAMLIT_PORT = int(os.getenv("STREAMLIT_PORT", "8501"))
+
+# Inter-service URLs — injected via K8s ConfigMap in production
+CORE_SERVICE_URL = os.getenv("CORE_SERVICE_URL", "http://localhost:3003")
+AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://localhost:3001")
+BACKEND_URL = os.getenv("BACKEND_URL", CORE_SERVICE_URL)
+
+# CORS allowed origins — comma-separated list from env
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:5173")

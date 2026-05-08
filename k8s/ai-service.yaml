@@ -22,13 +22,13 @@ spec:
       - name: ai-service
         image: haadtechacr2026.azurecr.io/ai-service:blue
         ports:
-        - containerPort: 3002
+        - containerPort: 8000
         envFrom:
         - configMapRef:
             name: ecommerce-config
         env:
-        - name: PORT
-          value: "3002"
+        - name: API_PORT
+          value: "8000"
         - name: DATABASE_URL
           valueFrom:
             secretKeyRef:
@@ -45,23 +45,26 @@ spec:
           value: "http://core-service:3003"
         resources:
           requests:
-            cpu: 50m
-            memory: 64Mi
-          limits:
             cpu: 200m
-            memory: 256Mi
+            memory: 512Mi
+          limits:
+            cpu: 500m
+            memory: 1536Mi
+        # Python + sentence-transformers + ChromaDB ingestion cần thời gian khởi động lâu hơn
         readinessProbe:
           httpGet:
             path: /health
-            port: 3002
-          initialDelaySeconds: 10
-          periodSeconds: 5
+            port: 8000
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          failureThreshold: 5
         livenessProbe:
           httpGet:
             path: /health
-            port: 3002
-          initialDelaySeconds: 15
-          periodSeconds: 10
+            port: 8000
+          initialDelaySeconds: 90
+          periodSeconds: 30
+          failureThreshold: 3
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -87,13 +90,13 @@ spec:
       - name: ai-service
         image: haadtechacr2026.azurecr.io/ai-service:green
         ports:
-        - containerPort: 3002
+        - containerPort: 8000
         envFrom:
         - configMapRef:
             name: ecommerce-config
         env:
-        - name: PORT
-          value: "3002"
+        - name: API_PORT
+          value: "8000"
         - name: DATABASE_URL
           valueFrom:
             secretKeyRef:
@@ -110,24 +113,28 @@ spec:
           value: "http://core-service:3003"
         resources:
           requests:
-            cpu: 50m
-            memory: 64Mi
-          limits:
             cpu: 200m
-            memory: 256Mi
+            memory: 512Mi
+          limits:
+            cpu: 500m
+            memory: 1536Mi
         readinessProbe:
           httpGet:
             path: /health
-            port: 3002
-          initialDelaySeconds: 10
-          periodSeconds: 5
+            port: 8000
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          failureThreshold: 5
         livenessProbe:
           httpGet:
             path: /health
-            port: 3002
-          initialDelaySeconds: 15
-          periodSeconds: 10
+            port: 8000
+          initialDelaySeconds: 90
+          periodSeconds: 30
+          failureThreshold: 3
 ---
+# Service giữ nguyên port 3002 ra ngoài → targetPort 8000 vào container
+# Ingress và ConfigMap AI_SERVICE_URL không cần đổi
 apiVersion: v1
 kind: Service
 metadata:
@@ -139,5 +146,5 @@ spec:
     slot: blue
   ports:
   - port: 3002
-    targetPort: 3002
+    targetPort: 8000
   type: ClusterIP

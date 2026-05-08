@@ -49,7 +49,7 @@ class ChatResponse(BaseModel):
     products: Optional[List[ProductCard]] = None
 
 
-BACKEND_URL = config.__dict__.get("BACKEND_URL", os.getenv("CORE_SERVICE_URL", "http://localhost:3003"))
+BACKEND_URL = config.BACKEND_URL
 
 PRODUCT_KEYWORDS = [
     "tim", "mua", "san pham", "sản phẩm", "tìm", "giá", "gia",
@@ -203,7 +203,7 @@ async def fetch_products_from_backend(query: str, max_results: int = 4) -> List[
         try:
             async with httpx.AsyncClient(timeout=15.0) as client:
                 parse_resp = await client.post(
-                    f"http://localhost:8000/api/suggest/ai-parse",
+                    f"http://localhost:{config.API_PORT}/api/suggest/ai-parse",
                     json={"query": query},
                 )
                 if parse_resp.status_code == 200:

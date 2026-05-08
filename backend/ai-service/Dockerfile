@@ -1,24 +1,35 @@
-FROM node:20-alpine AS base
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
-
-# ---- final stage ----
-FROM node:20-alpine
+FROM python:3.11-slim
 WORKDIR /app
 
-COPY --from=base /app/node_modules ./node_modules
+# Install build tools + libgomp (required by faiss-cpu) + sqlite3 (required by chromadb)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libgomp1 \
+    sqlite3 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies first (layer caching)
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
 COPY . .
 
+# Create writable directories for vector store, data, and logs
+RUN mkdir -p chatbot/vectorstore/chromadb chatbot/data/raw logs \
+    && chmod -R 777 chatbot/vectorstore chatbot/data logs
 
-RUN mkdir -p /app/logs && chmod -R 777 /app/logs
-
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+RUN groupadd -r appgroup && useradd -r -g appgroup appuser
 USER appuser
 
-EXPOSE 3002
+# Run uvicorn from the chatbot/ subdirectory so relative imports resolve correctly:
+# - "from api import ..." resolves to chatbot/api/
+# - "from suggest import ..." resolves to ../suggest/ via sys.path added in main.py
+WORKDIR /app/chatbot
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD wget -qO- http://localhost:3002/health || exit 1
+EXPOSE 8000
 
-CMD ["node", "src/app.js"]
+HEALTHCHECK --interval=30s --timeout=15s --start-period=120s --retries=3 \
+  CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

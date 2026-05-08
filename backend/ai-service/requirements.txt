@@ -5,12 +5,12 @@ langchain-openai
 langchain-groq
 langchain-chroma
 langchain_community
+langchain-core
 faiss-cpu
 transformers
-python-dotenv
-dotenv
-langchain-core
 sentence-transformers
+python-dotenv
+httpx
 requests
 chromadb
 pydantic
