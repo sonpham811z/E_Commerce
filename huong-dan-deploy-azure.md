@@ -13,11 +13,13 @@ Developer (Visual Studio)
     → git push main (GitHub)
         → Jenkins (trên VM haadtech-jenkins-vm) tự động:
             1. Pull code
-            2. Run tests (npm test)
-            3. Build Docker images
-            4. Push images → haadtechacr2026 (ACR)
-            5. Deploy Blue/Green → haadtech-aks (AKS)
-            6. Frontend static → haadtech-web-2026 (App Service)
+            2. Load secrets từ Azure Key Vault
+            3. Run tests (npm test cho auth-service + core-service; ai-service dùng Python - không test tự động)
+            4. Build Docker images (auth/core: Node.js; ai: Python FastAPI)
+            5. Push images → haadtechacr2026 (ACR)
+            6. Deploy Blue/Green → haadtech-aks (AKS)
+            7. Frontend static → haadtech-web-2026 (App Service)
+        → Domain: haadtech.shop (frontend) + api.haadtech.shop (API backend, HTTPS qua cert-manager)
         → Azure Monitor + App Insights giám sát
         → Azure Key Vault lưu secrets
         → Azure DevOps Boards theo dõi tasks
@@ -272,10 +274,10 @@ data:
   DB_SSL: "true"
   DB_POOL_MAX: "10"
   DB_POOL_MIN: "2"
-  ALLOWED_ORIGINS: "https://haadtech-web-2026.azurewebsites.net"
-  FRONTEND_URL: "http://haadtech-web-2026.azurewebsites.net"
+  ALLOWED_ORIGINS: "https://haadtech.shop,https://www.haadtech.shop"
+  FRONTEND_URL: "https://haadtech.shop"
   RATE_LIMIT_WINDOW_MS: "900000"
-  RATE_LIMIT_MAX: "100"
+  RATE_LIMIT_MAX: "500"
   BCRYPT_ROUNDS: "12"
   JWT_ACCESS_EXPIRES_IN: "15m"
   JWT_REFRESH_EXPIRES_IN: "7d"
@@ -615,6 +617,10 @@ spec:
 
 #### AI Service — `k8s/ai-service.yaml`
 
+> **Lưu ý:** AI Service đã được migrate sang **Python FastAPI** (uvicorn, port 8000 bên trong container).
+> Service K8s vẫn expose port 3002 ra ngoài → targetPort 8000. Ingress và ConfigMap không cần đổi.
+> Resources và startup probe lâu hơn do Python + sentence-transformers + ChromaDB cần thời gian load.
+
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -640,18 +646,13 @@ spec:
       - name: ai-service
         image: haadtechacr2026.azurecr.io/ai-service:blue
         ports:
-        - containerPort: 3002
+        - containerPort: 8000
         envFrom:
         - configMapRef:
             name: ecommerce-config
         env:
-        - name: PORT
-          value: "3002"
-        - name: DATABASE_URL
-          valueFrom:
-            secretKeyRef:
-              name: ai-secrets
-              key: DATABASE_URL
+        - name: API_PORT
+          value: "8000"
         - name: GROQ_API_KEY
           valueFrom:
             secretKeyRef:
@@ -663,23 +664,26 @@ spec:
           value: "http://core-service:3003"
         resources:
           requests:
-            cpu: 50m
-            memory: 64Mi
-          limits:
             cpu: 200m
-            memory: 256Mi
+            memory: 512Mi
+          limits:
+            cpu: 500m
+            memory: 1536Mi
+        # Python + sentence-transformers + ChromaDB cần thời gian khởi động lâu hơn Node.js
         readinessProbe:
           httpGet:
             path: /health
-            port: 3002
-          initialDelaySeconds: 10
-          periodSeconds: 5
+            port: 8000
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          failureThreshold: 5
         livenessProbe:
           httpGet:
             path: /health
-            port: 3002
-          initialDelaySeconds: 15
-          periodSeconds: 10
+            port: 8000
+          initialDelaySeconds: 90
+          periodSeconds: 30
+          failureThreshold: 3
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -705,18 +709,13 @@ spec:
       - name: ai-service
         image: haadtechacr2026.azurecr.io/ai-service:green
         ports:
-        - containerPort: 3002
+        - containerPort: 8000
         envFrom:
         - configMapRef:
             name: ecommerce-config
         env:
-        - name: PORT
-          value: "3002"
-        - name: DATABASE_URL
-          valueFrom:
-            secretKeyRef:
-              name: ai-secrets
-              key: DATABASE_URL
+        - name: API_PORT
+          value: "8000"
         - name: GROQ_API_KEY
           valueFrom:
             secretKeyRef:
@@ -728,24 +727,28 @@ spec:
           value: "http://core-service:3003"
         resources:
           requests:
-            cpu: 50m
-            memory: 64Mi
-          limits:
             cpu: 200m
-            memory: 256Mi
+            memory: 512Mi
+          limits:
+            cpu: 500m
+            memory: 1536Mi
         readinessProbe:
           httpGet:
             path: /health
-            port: 3002
-          initialDelaySeconds: 10
-          periodSeconds: 5
+            port: 8000
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          failureThreshold: 5
         livenessProbe:
           httpGet:
             path: /health
-            port: 3002
-          initialDelaySeconds: 15
-          periodSeconds: 10
+            port: 8000
+          initialDelaySeconds: 90
+          periodSeconds: 30
+          failureThreshold: 3
 ---
+# Service giữ nguyên port 3002 ra ngoài → targetPort 8000 vào container Python
+# Ingress route /api/ai → ai-service:3002 → container:8000 không cần thay đổi
 apiVersion: v1
 kind: Service
 metadata:
@@ -757,7 +760,7 @@ spec:
     slot: blue
   ports:
   - port: 3002
-    targetPort: 3002
+    targetPort: 8000
   type: ClusterIP
 ```
 
@@ -783,16 +786,22 @@ metadata:
   name: ecommerce-ingress
   namespace: ecommerce
   annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
     nginx.ingress.kubernetes.io/proxy-body-size: "10m"
     nginx.ingress.kubernetes.io/rewrite-target: /$2
     nginx.ingress.kubernetes.io/use-regex: "true"
-    nginx.ingress.kubernetes.io/cors-allow-origin: "https://haadtech-web-2026.azurewebsites.net"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://haadtech.shop"
     nginx.ingress.kubernetes.io/enable-cors: "true"
 spec:
   ingressClassName: nginx
+  tls:
+  - hosts:
+    - api.haadtech.shop
+    secretName: api-haadtech-tls
   rules:
-  - http:
+  - host: api.haadtech.shop
+    http:
       paths:
       - path: /api/auth(/|$)(.*)
         pathType: ImplementationSpecific
@@ -816,6 +825,28 @@ spec:
             port:
               number: 3003
 ```
+
+> **Lưu ý:** Cần cài cert-manager trên AKS trước khi apply ingress:
+> ```bash
+> kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.0/cert-manager.yaml
+> # Tạo ClusterIssuer cho Let's Encrypt
+> kubectl apply -f - <<EOF
+> apiVersion: cert-manager.io/v1
+> kind: ClusterIssuer
+> metadata:
+>   name: letsencrypt-prod
+> spec:
+>   acme:
+>     server: https://acme-v02.api.letsencrypt.org/directory
+>     email: thaisonpham243@gmail.com
+>     privateKeySecretRef:
+>       name: letsencrypt-prod
+>     solvers:
+>     - http01:
+>         ingress:
+>           class: nginx
+> EOF
+> ```
 
 ```bash
 kubectl apply -f k8s/ingress.yaml
@@ -870,239 +901,116 @@ kubectl get ingress -n ecommerce
 
 ## PHẦN 5: JENKINSFILE — TỰ ĐỘNG BUILD, TEST, DEPLOY
 
-Tạo file `Jenkinsfile` ở root của repo:
+> **Quan trọng:** Jenkinsfile thực tế dùng **Azure Key Vault** để load secrets thay vì Jenkins Credentials.
+> Jenkins VM có Managed Identity → `az cli` tự xác thực, không cần lưu secrets trong Jenkins.
+> Frontend build dùng domain cố định `https://api.haadtech.shop` (không cần lấy Ingress IP nữa).
+
+Xem file `Jenkinsfile` ở root repo để biết pipeline đầy đủ. Tóm tắt các stage chính:
 
 ```groovy
 pipeline {
     agent any
 
     environment {
-        ACR_REGISTRY = 'haadtechacr2026.azurecr.io'
-        ACR_CREDENTIALS = credentials('acr-credentials')
-        AKS_NAMESPACE = 'ecommerce'
-        BUILD_TAG = "${env.BUILD_NUMBER}"
-        // App Service cho frontend
-        WEBAPP_NAME = 'haadtech-web-2026'
-        RESOURCE_GROUP = '<YOUR_RESOURCE_GROUP>'  // ← ĐỔI TÊN RESOURCE GROUP
+        ACR_NAME        = 'haadtechacr2026'
+        ACR_REGISTRY    = "${ACR_NAME}.azurecr.io"
+        AKS_NAMESPACE   = 'ecommerce'
+        RESOURCE_GROUP  = 'HAADTechRG_IS402'
+        AKS_CLUSTER     = 'haadtech-aks'
+        KEY_VAULT_NAME  = 'haadtechkv2026IS402'
+        WEBAPP_NAME     = 'haadtech-web-2026'
+        BUILD_TAG       = "${env.BUILD_NUMBER}"
     }
 
-    tools {
-        nodejs 'NodeJS-20'
-    }
+    tools { nodejs 'NodeJS-20' }
 
     stages {
+        stage('Checkout') { /* pull code */ }
 
-        // ============================================
-        // STAGE 1: CHECKOUT CODE
-        // ============================================
-        stage('Checkout') {
+        // Load 10 secrets từ Key Vault (ACR, Auth DB, JWT, SMTP, Core DB, Stripe, AI Groq Key)
+        stage('Load Secrets from Key Vault') {
             steps {
-                checkout scm
                 script {
-                    // Xác định slot hiện tại và slot mới
-                    def currentSlot = sh(
-                        script: "kubectl get svc auth-service -n ${AKS_NAMESPACE} -o jsonpath='{.spec.selector.slot}' 2>/dev/null || echo 'blue'",
-                        returnStdout: true
-                    ).trim()
-                    env.CURRENT_SLOT = currentSlot
-                    env.NEW_SLOT = (currentSlot == 'blue') ? 'green' : 'blue'
-                    echo "Current slot: ${env.CURRENT_SLOT}, Deploying to: ${env.NEW_SLOT}"
+                    env.ACR_USERNAME = sh(script: "az keyvault secret show --vault-name ${KEY_VAULT_NAME} --name acr-username --query value -o tsv", returnStdout: true).trim()
+                    env.ACR_PASSWORD = sh(script: "az keyvault secret show --vault-name ${KEY_VAULT_NAME} --name acr-password --query value -o tsv", returnStdout: true).trim()
+                    env.AUTH_DB_URL  = sh(script: "az keyvault secret show --vault-name ${KEY_VAULT_NAME} --name auth-database-url --query value -o tsv", returnStdout: true).trim()
+                    env.KV_JWT_SECRET   = sh(script: "az keyvault secret show --vault-name ${KEY_VAULT_NAME} --name jwt-secret --query value -o tsv", returnStdout: true).trim()
+                    env.KV_JWT_REFRESH  = sh(script: "az keyvault secret show --vault-name ${KEY_VAULT_NAME} --name jwt-refresh-secret --query value -o tsv", returnStdout: true).trim()
+                    env.KV_SMTP_USER    = sh(script: "az keyvault secret show --vault-name ${KEY_VAULT_NAME} --name smtp-user --query value -o tsv", returnStdout: true).trim()
+                    env.KV_SMTP_PASS    = sh(script: "az keyvault secret show --vault-name ${KEY_VAULT_NAME} --name smtp-pass --query value -o tsv", returnStdout: true).trim()
+                    env.CORE_DB_URL     = sh(script: "az keyvault secret show --vault-name ${KEY_VAULT_NAME} --name core-database-url --query value -o tsv", returnStdout: true).trim()
+                    env.KV_STRIPE_KEY   = sh(script: "az keyvault secret show --vault-name ${KEY_VAULT_NAME} --name stripe-secret-key --query value -o tsv", returnStdout: true).trim()
+                    env.KV_GROQ_KEY     = sh(script: "az keyvault secret show --vault-name ${KEY_VAULT_NAME} --name groq-api-key --query value -o tsv", returnStdout: true).trim()
                 }
             }
         }
 
-        // ============================================
-        // STAGE 2: TEST — Auth Service & Core Service
-        // ============================================
-        stage('Test Auth Service') {
-            steps {
-                dir('backend/auth-service') {
-                    sh 'npm ci'
-                    sh 'npm test -- --forceExit --detectOpenHandles || true'
-                }
-            }
-        }
+        stage('Determine Slot') { /* xác định blue/green hiện tại */ }
 
-        stage('Test Core Service') {
-            steps {
-                dir('backend/core-service') {
-                    sh 'npm ci'
-                    sh 'npm test -- --forceExit --detectOpenHandles || true'
-                }
-            }
-        }
+        // Đồng bộ K8s Secrets từ Key Vault (mỗi lần deploy = secrets mới nhất)
+        stage('Sync K8s Secrets') { /* kubectl delete + create secret */ }
 
-        // ============================================
-        // STAGE 3: BUILD DOCKER IMAGES
-        // ============================================
+        // Test chỉ cho Node.js services
+        stage('Test Auth Service') { dir('backend/auth-service') { sh 'npm ci && npm test -- --forceExit || true' } }
+        stage('Test Core Service') { dir('backend/core-service') { sh 'npm ci && npm test -- --forceExit || true' } }
+        // AI Service (Python) không có test stage tự động
+
         stage('Build Docker Images') {
             steps {
-                script {
-                    sh """
-                        docker build -t ${ACR_REGISTRY}/auth-service:${NEW_SLOT} \
-                                     -t ${ACR_REGISTRY}/auth-service:build-${BUILD_TAG} \
-                                     ./backend/auth-service
-
-                        docker build -t ${ACR_REGISTRY}/core-service:${NEW_SLOT} \
-                                     -t ${ACR_REGISTRY}/core-service:build-${BUILD_TAG} \
-                                     ./backend/core-service
-
-                        docker build -t ${ACR_REGISTRY}/ai-service:${NEW_SLOT} \
-                                     -t ${ACR_REGISTRY}/ai-service:build-${BUILD_TAG} \
-                                     ./backend/ai-service
-                    """
-                }
+                sh """
+                    docker build -t ${ACR_REGISTRY}/auth-service:${NEW_SLOT} ./backend/auth-service
+                    docker build -t ${ACR_REGISTRY}/core-service:${NEW_SLOT} ./backend/core-service
+                    # AI service: Python FastAPI image (Dockerfile dùng python:3.11-slim + uvicorn)
+                    docker build -t ${ACR_REGISTRY}/ai-service:${NEW_SLOT} ./backend/ai-service
+                """
             }
         }
 
-        // ============================================
-        // STAGE 4: PUSH TO ACR
-        // ============================================
-        stage('Push to ACR') {
-            steps {
-                script {
-                    sh """
-                        echo ${ACR_CREDENTIALS_PSW} | docker login ${ACR_REGISTRY} \
-                            -u ${ACR_CREDENTIALS_USR} --password-stdin
+        stage('Push to ACR') { /* docker login + push 3 images */ }
 
-                        docker push ${ACR_REGISTRY}/auth-service:${NEW_SLOT}
-                        docker push ${ACR_REGISTRY}/auth-service:build-${BUILD_TAG}
-
-                        docker push ${ACR_REGISTRY}/core-service:${NEW_SLOT}
-                        docker push ${ACR_REGISTRY}/core-service:build-${BUILD_TAG}
-
-                        docker push ${ACR_REGISTRY}/ai-service:${NEW_SLOT}
-                        docker push ${ACR_REGISTRY}/ai-service:build-${BUILD_TAG}
-                    """
-                }
-            }
-        }
-
-        // ============================================
-        // STAGE 5: DEPLOY TO NEW SLOT (Blue-Green)
-        // ============================================
         stage('Deploy to New Slot') {
             steps {
                 script {
-                    // Scale up new slot, update image
                     for (svc in ['auth-service', 'core-service', 'ai-service']) {
-                        sh """
-                            kubectl set image deployment/${svc}-${NEW_SLOT} \
-                                ${svc}=${ACR_REGISTRY}/${svc}:${NEW_SLOT} \
-                                -n ${AKS_NAMESPACE}
-
-                            kubectl scale deployment/${svc}-${NEW_SLOT} \
-                                --replicas=1 \
-                                -n ${AKS_NAMESPACE}
-                        """
+                        sh "kubectl set image deployment/${svc}-${NEW_SLOT} ${svc}=${ACR_REGISTRY}/${svc}:${NEW_SLOT} -n ${AKS_NAMESPACE}"
+                        sh "kubectl scale deployment/${svc}-${NEW_SLOT} --replicas=1 -n ${AKS_NAMESPACE}"
                     }
-
-                    // Chờ tất cả pods ready
-                    for (svc in ['auth-service', 'core-service', 'ai-service']) {
-                        sh """
-                            kubectl rollout status deployment/${svc}-${NEW_SLOT} \
-                                -n ${AKS_NAMESPACE} --timeout=120s
-                        """
+                    // auth + core: timeout 120s
+                    for (svc in ['auth-service', 'core-service']) {
+                        sh "kubectl rollout status deployment/${svc}-${NEW_SLOT} -n ${AKS_NAMESPACE} --timeout=120s"
                     }
+                    // ai-service (Python): timeout 300s do cần thời gian load ML libraries
+                    sh "kubectl rollout status deployment/ai-service-${NEW_SLOT} -n ${AKS_NAMESPACE} --timeout=300s"
                 }
             }
         }
 
-        // ============================================
-        // STAGE 6: SMOKE TEST trên slot mới
-        // ============================================
         stage('Smoke Test') {
             steps {
                 script {
-                    // Test trực tiếp qua pod IP (chưa switch service)
-                    def authPod = sh(
-                        script: "kubectl get pod -n ${AKS_NAMESPACE} -l app=auth-service,slot=${NEW_SLOT} -o jsonpath='{.items[0].metadata.name}'",
-                        returnStdout: true
-                    ).trim()
+                    // Chỉ test Node.js services (có wget); ai-service dùng readinessProbe thay thế
+                    def authPod = sh(script: "kubectl get pod -n ${AKS_NAMESPACE} -l app=auth-service,slot=${NEW_SLOT} -o jsonpath='{.items[0].metadata.name}'", returnStdout: true).trim()
+                    sh "kubectl exec ${authPod} -n ${AKS_NAMESPACE} -- wget -qO- http://localhost:3001/health || exit 1"
 
-                    sh """
-                        kubectl exec ${authPod} -n ${AKS_NAMESPACE} -- \
-                            wget -qO- http://localhost:3001/health || exit 1
-                    """
-
-                    def corePod = sh(
-                        script: "kubectl get pod -n ${AKS_NAMESPACE} -l app=core-service,slot=${NEW_SLOT} -o jsonpath='{.items[0].metadata.name}'",
-                        returnStdout: true
-                    ).trim()
-
-                    sh """
-                        kubectl exec ${corePod} -n ${AKS_NAMESPACE} -- \
-                            wget -qO- http://localhost:3003/health || exit 1
-                    """
-
-                    echo "Smoke tests passed on ${NEW_SLOT} slot!"
+                    def corePod = sh(script: "kubectl get pod -n ${AKS_NAMESPACE} -l app=core-service,slot=${NEW_SLOT} -o jsonpath='{.items[0].metadata.name}'", returnStdout: true).trim()
+                    sh "kubectl exec ${corePod} -n ${AKS_NAMESPACE} -- wget -qO- http://localhost:3003/health || exit 1"
                 }
             }
         }
 
-        // ============================================
-        // STAGE 7: SWITCH TRAFFIC (Blue ↔ Green)
-        // ============================================
-        stage('Switch Traffic') {
-            steps {
-                script {
-                    for (entry in [
-                        ['auth-service', '3001'],
-                        ['core-service', '3003'],
-                        ['ai-service', '3002']
-                    ]) {
-                        def svcName = entry[0]
-                        def port = entry[1]
-                        sh """
-                            kubectl patch svc ${svcName} -n ${AKS_NAMESPACE} \
-                                -p '{"spec":{"selector":{"app":"${svcName}","slot":"${NEW_SLOT}"}}}'
-                        """
-                    }
-                    echo "Traffic switched to ${NEW_SLOT}!"
-                }
-            }
-        }
+        stage('Switch Traffic') { /* kubectl patch svc selector → NEW_SLOT cho cả 3 services */ }
+        stage('Scale Down Old Slot') { /* kubectl scale --replicas=0 cho slot cũ */ }
 
-        // ============================================
-        // STAGE 8: SCALE DOWN OLD SLOT
-        // ============================================
-        stage('Scale Down Old Slot') {
-            steps {
-                script {
-                    for (svc in ['auth-service', 'core-service', 'ai-service']) {
-                        sh """
-                            kubectl scale deployment/${svc}-${CURRENT_SLOT} \
-                                --replicas=0 \
-                                -n ${AKS_NAMESPACE}
-                        """
-                    }
-                    echo "Old slot ${CURRENT_SLOT} scaled down."
-                }
-            }
-        }
-
-        // ============================================
-        // STAGE 9: BUILD & DEPLOY FRONTEND → App Service
-        // ============================================
         stage('Build Frontend') {
             steps {
                 dir('Ecommerce_Website') {
-                    script {
-                        // Lấy Ingress External IP
-                        def ingressIP = sh(
-                            script: "kubectl get ingress ecommerce-ingress -n ${AKS_NAMESPACE} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'",
-                            returnStdout: true
-                        ).trim()
-
-                        // Tạo .env cho frontend build
-                        writeFile file: '.env', text: """
-VITE_AUTH_SERVICE_URL=http://${ingressIP}/api/auth
-VITE_AI_SERVICE_URL=http://${ingressIP}/api/ai
-VITE_CORE_SERVICE_URL=http://${ingressIP}/api
+                    // Dùng domain cố định api.haadtech.shop thay vì Ingress IP
+                    writeFile file: '.env', text: """
+VITE_AUTH_SERVICE_URL=https://api.haadtech.shop/api/auth
+VITE_AI_SERVICE_URL=https://api.haadtech.shop/api/ai
+VITE_CORE_SERVICE_URL=https://api.haadtech.shop/api
 """
-                        sh 'npm ci'
-                        sh 'npm run build'
-                    }
+                    sh 'npm ci && npm run build'
                 }
             }
         }
@@ -1111,51 +1019,26 @@ VITE_CORE_SERVICE_URL=http://${ingressIP}/api
             steps {
                 dir('Ecommerce_Website') {
                     sh """
-                        cd dist
-                        zip -r ../frontend.zip .
-                        cd ..
-                        az webapp deploy \
-                            --resource-group ${RESOURCE_GROUP} \
-                            --name ${WEBAPP_NAME} \
-                            --src-path frontend.zip \
-                            --type zip
+                        cd dist && zip -r ../frontend.zip . && cd ..
+                        az webapp deploy --resource-group ${RESOURCE_GROUP} --name ${WEBAPP_NAME} --src-path frontend.zip --type zip
                     """
                 }
             }
         }
     }
 
-    // ============================================
-    // POST ACTIONS
-    // ============================================
     post {
-        success {
-            echo '✅ Deploy thành công! Blue-Green switch hoàn tất.'
-        }
+        success { echo "✅ Build #${BUILD_NUMBER} deployed to ${env.NEW_SLOT}" }
         failure {
             script {
-                echo '❌ Deploy thất bại! Rolling back...'
                 // Rollback: switch traffic về slot cũ
-                for (entry in [
-                    ['auth-service', '3001'],
-                    ['core-service', '3003'],
-                    ['ai-service', '3002']
-                ]) {
-                    def svcName = entry[0]
-                    sh """
-                        kubectl patch svc ${svcName} -n ${AKS_NAMESPACE} \
-                            -p '{"spec":{"selector":{"app":"${svcName}","slot":"${env.CURRENT_SLOT}"}}}' || true
-                    """
-                }
-                // Scale down slot lỗi
                 for (svc in ['auth-service', 'core-service', 'ai-service']) {
-                    sh """
-                        kubectl scale deployment/${svc}-${env.NEW_SLOT} \
-                            --replicas=0 -n ${AKS_NAMESPACE} || true
-                    """
+                    sh "kubectl patch svc ${svc} -n ${AKS_NAMESPACE} -p '{\"spec\":{\"selector\":{\"app\":\"${svc}\",\"slot\":\"${env.CURRENT_SLOT}\"}}}' || true"
+                    sh "kubectl scale deployment/${svc}-${env.NEW_SLOT} --replicas=0 -n ${AKS_NAMESPACE} || true"
                 }
             }
         }
+        always { sh 'docker system prune -f || true'; cleanWs() }
     }
 }
 ```
@@ -1218,15 +1101,14 @@ az webapp config set \
 
 ### Bước 7.1: Tích hợp App Insights vào Backend
 
-Thêm vào mỗi backend service's `package.json`:
+**Auth Service và Core Service (Node.js):**
 
 ```bash
 cd backend/auth-service && npm install applicationinsights
 cd backend/core-service && npm install applicationinsights
-cd backend/ai-service && npm install applicationinsights
 ```
 
-Thêm vào đầu mỗi `src/app.js` (TRƯỚC tất cả imports khác):
+Thêm vào đầu `src/app.js` (TRƯỚC tất cả imports khác):
 
 ```javascript
 // === Application Insights === (thêm vào dòng đầu tiên)
@@ -1240,6 +1122,23 @@ if (process.env.APPLICATIONINSIGHTS_CONNECTION_STRING) {
     .start();
 }
 // === End App Insights ===
+```
+
+**AI Service (Python FastAPI):**
+
+AI service đã được migrate sang Python — dùng `azure-monitor-opentelemetry` thay vì npm package:
+
+```bash
+cd backend/ai-service && pip install azure-monitor-opentelemetry
+```
+
+Thêm vào đầu `chatbot/app/main.py` (TRƯỚC khi tạo FastAPI app):
+
+```python
+import os
+if os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"):
+    from azure.monitor.opentelemetry import configure_azure_monitor
+    configure_azure_monitor()
 ```
 
 ### Bước 7.2: Thêm Connection String vào ConfigMap

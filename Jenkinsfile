@@ -249,13 +249,18 @@ pipeline {
                         """
                     }
 
-                    // Chờ tất cả pods ready
-                    for (svc in ['auth-service', 'core-service', 'ai-service']) {
+                    // Chờ Node.js services ready (khởi động nhanh)
+                    for (svc in ['auth-service', 'core-service']) {
                         sh """
                             kubectl rollout status deployment/${svc}-${NEW_SLOT} \
                                 -n ${AKS_NAMESPACE} --timeout=120s
                         """
                     }
+                    // ai-service (Python FastAPI + sentence-transformers + ChromaDB) cần thêm thời gian
+                    sh """
+                        kubectl rollout status deployment/ai-service-${NEW_SLOT} \
+                            -n ${AKS_NAMESPACE} --timeout=300s
+                    """
                 }
             }
         }

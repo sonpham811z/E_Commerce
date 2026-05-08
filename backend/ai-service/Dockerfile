@@ -1,24 +1,27 @@
-FROM node:20-alpine AS base
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
+FROM python:3.11-slim
 
-# ---- final stage ----
-FROM node:20-alpine
 WORKDIR /app
 
-COPY --from=base /app/node_modules ./node_modules
-COPY . .
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc g++ curl && \
+    rm -rf /var/lib/apt/lists/*
 
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-RUN mkdir -p /app/logs && chmod -R 777 /app/logs
+# Copy contents of chatbot/ directly into /app/
+# Result: /app/app/main.py, /app/api/, /app/config/, /app/llm/, /app/data/, etc.
+COPY chatbot/ /app/
 
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+RUN mkdir -p /app/vectorstore/chromadb /app/logs
+
+RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
+RUN chown -R appuser:appgroup /app
 USER appuser
 
-EXPOSE 3002
+EXPOSE 8000
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD wget -qO- http://localhost:3002/health || exit 1
+HEALTHCHECK --interval=30s --timeout=15s --start-period=120s --retries=3 \
+  CMD curl -f http://localhost:8000/health || exit 1
 
-CMD ["node", "src/app.js"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
