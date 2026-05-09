@@ -33,8 +33,8 @@
 | Họ và tên | MSSV |
 |-----------|------|
 | Huỳnh Trần Anh Thư | 23521535|
-| Phạm Thái Sơn | 23521|
-| Phạm Gia Quyền |2352 |
+| Phạm Thái Sơn | 23521361|
+| Phạm Gia Quyền |23521323|
 | Đặng Thiên Ân | 23520003|
 
 ---
