@@ -142,6 +142,8 @@ pipeline {
 
                     sh "kubectl apply -f k8s/ingress.yaml"
 
+                    sh "kubectl apply -f k8s/ingress.yaml"
+
                     // Xóa secrets cũ + tạo mới (đảm bảo giá trị mới nhất từ Key Vault)
                     sh """
                         kubectl delete secret auth-secrets -n ${AKS_NAMESPACE} --ignore-not-found
