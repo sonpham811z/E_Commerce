@@ -12,6 +12,7 @@ const categoryRoutes = require('./routes/categoryRoutes');
 const errorHandler = require('./middleware/errorHandler');
 const logger = require('./utils/logger');
 const { testConnection } = require('./config/database');
+const { connectRedis } = require('./config/redis');
 
 const app = express();
 const PORT = process.env.PORT || 3003;
@@ -63,6 +64,7 @@ app.use(errorHandler);
 const start = async () => {
   try {
     await testConnection();
+    await connectRedis();
     app.listen(PORT, () => {
       logger.info(`Core Service running on port ${PORT}`);
       logger.info(`API docs: http://localhost:${PORT}/api-docs`);
