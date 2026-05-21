@@ -10,8 +10,7 @@ import os
 
 router = APIRouter(prefix="/api/products", tags=["products"])
 
-# Backend API base URL - same host, port 5058
-BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:5058")
+BACKEND_URL = os.getenv("CORE_SERVICE_URL", "http://localhost:3003")
 
 
 class ProductSearchRequest(BaseModel):

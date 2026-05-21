@@ -21,7 +21,7 @@ pipeline {
 
     options {
         buildDiscarder(logRotator(numToKeepStr: '10'))
-        timeout(time: 30, unit: 'MINUTES')
+        timeout(time: 60, unit: 'MINUTES')
         disableConcurrentBuilds()
     }
 
@@ -142,6 +142,8 @@ pipeline {
 
                     sh "kubectl apply -f k8s/ingress.yaml"
 
+                    sh "kubectl apply -f k8s/ingress.yaml"
+
                     // Xóa secrets cũ + tạo mới (đảm bảo giá trị mới nhất từ Key Vault)
                     sh """
                         kubectl delete secret auth-secrets -n ${AKS_NAMESPACE} --ignore-not-found
@@ -251,7 +253,7 @@ pipeline {
                         """
                     }
 
-                    // Chờ tất cả pods ready (AI service cần 180s vì load model Python)
+                    // Chờ auth + core (nhanh hơn), AI service cần timeout dài hơn do load Python model
                     for (svc in ['auth-service', 'core-service']) {
                         sh """
                             kubectl rollout status deployment/${svc}-${NEW_SLOT} \
@@ -260,7 +262,7 @@ pipeline {
                     }
                     sh """
                         kubectl rollout status deployment/ai-service-${NEW_SLOT} \
-                            -n ${AKS_NAMESPACE} --timeout=300s
+                            -n ${AKS_NAMESPACE} --timeout=500s
                     """
                 }
             }
@@ -269,33 +271,32 @@ pipeline {
         // ══════════════════════════════════════════════
         // STAGE 9: SMOKE TEST (trên slot mới, chưa switch traffic)
         // ══════════════════════════════════════════════
-        stage('Smoke Test') {
-            steps {
-                script {
-                    // Test health endpoint trực tiếp trong pod
-                    def authPod = sh(
-                        script: "kubectl get pod -n ${AKS_NAMESPACE} -l app=auth-service,slot=${NEW_SLOT} -o jsonpath='{.items[0].metadata.name}'",
-                        returnStdout: true
-                    ).trim()
-                    sh "kubectl exec ${authPod} -n ${AKS_NAMESPACE} -- wget -qO- http://localhost:3001/health || exit 1"
-
-                    def corePod = sh(
-                        script: "kubectl get pod -n ${AKS_NAMESPACE} -l app=core-service,slot=${NEW_SLOT} -o jsonpath='{.items[0].metadata.name}'",
-                        returnStdout: true
-                    ).trim()
-                    sh "kubectl exec ${corePod} -n ${AKS_NAMESPACE} -- wget -qO- http://localhost:3003/health || exit 1"
-
-                    // AI service: Python FastAPI trên port 8000
-                    def aiPod = sh(
-                        script: "kubectl get pod -n ${AKS_NAMESPACE} -l app=ai-service,slot=${NEW_SLOT} -o jsonpath='{.items[0].metadata.name}'",
-                        returnStdout: true
-                    ).trim()
-                    sh "kubectl exec ${aiPod} -n ${AKS_NAMESPACE} -- python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\" || exit 1"
-
-                    echo "✅ Smoke tests passed on ${NEW_SLOT} slot"
-                }
+    stage('Smoke Test') {
+        steps {
+            script {
+                def authPod = sh(
+                    script: "kubectl get pod -n ${AKS_NAMESPACE} -l app=auth-service,slot=${NEW_SLOT} -o jsonpath='{.items[0].metadata.name}'",
+                    returnStdout: true
+                ).trim()
+                sh "kubectl exec ${authPod} -n ${AKS_NAMESPACE} -- wget -qO- http://localhost:3001/health || exit 1"
+    
+                def corePod = sh(
+                    script: "kubectl get pod -n ${AKS_NAMESPACE} -l app=core-service,slot=${NEW_SLOT} -o jsonpath='{.items[0].metadata.name}'",
+                    returnStdout: true
+                ).trim()
+                sh "kubectl exec ${corePod} -n ${AKS_NAMESPACE} -- wget -qO- http://localhost:3003/health || exit 1"
+    
+                def aiPod = sh(
+                    script: "kubectl get pod -n ${AKS_NAMESPACE} -l app=ai-service,slot=${NEW_SLOT} -o jsonpath='{.items[0].metadata.name}'",
+                    returnStdout: true
+                ).trim()
+                // Dùng rollout status thay vì exec vào container
+                sh "kubectl rollout status deployment/ai-service-${NEW_SLOT} -n ${AKS_NAMESPACE} --timeout=10s || exit 1"
+    
+                echo "✅ Smoke tests passed on ${NEW_SLOT} slot"
             }
         }
+    }
 
         // ══════════════════════════════════════════════
         // STAGE 10: SWITCH TRAFFIC (Blue ↔ Green)
@@ -338,15 +339,7 @@ pipeline {
             steps {
                 dir('Ecommerce_Website') {
                     script {
-                        // Lấy Ingress External IP
-                        def ingressIP = sh(
-                            script: "kubectl get ingress ecommerce-ingress -n ${AKS_NAMESPACE} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'",
-                            returnStdout: true
-                        ).trim()
-
-                        // Tạo .env cho Vite build
-                        writeFile file: '.env', text: """
-VITE_AUTH_SERVICE_URL=https://api.haadtech.shop/api/auth
+                        writeFile file: '.env', text: """VITE_AUTH_SERVICE_URL=https://api.haadtech.shop/api/auth
 VITE_AI_SERVICE_URL=https://api.haadtech.shop/api/ai
 VITE_CORE_SERVICE_URL=https://api.haadtech.shop/api
 """

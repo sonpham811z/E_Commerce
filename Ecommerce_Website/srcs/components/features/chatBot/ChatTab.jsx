@@ -6,14 +6,14 @@ import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
 
 // Kết nối qua Node.js ai-service (port 3002) - proxy đến Python FastAPI
-const API_BASE_URL = 'http://localhost:3002';
-// Fallback URL nếu cổng chính không hoạt động
-const FALLBACK_API_URL = 'http://127.0.0.1:3002';
+// Dùng biến môi trường Vite — ĐÚNG
+const API_BASE_URL = import.meta.env.VITE_AI_SERVICE_URL || 'http://localhost:3002';
+const FALLBACK_API_URL = import.meta.env.VITE_AI_SERVICE_URL || 'http://127.0.0.1:3002';
 
 // Create a function to check if ChatBot service is running
 const testChatbotConnection = async (url) => {
   try {
-    await axios.get(`${url}/test`);
+    await axios.get(`${url}/health`);
     console.log('Connection successful to:', url);
     return true;
   } catch (error) {
@@ -101,67 +101,35 @@ export default function ChatTab({ onClose }) {
     console.log(`Sending query to chatbot API at ${activeApiUrl}`);
 
     try {
-      const requestData = {
-        query: inputValue.trim(),
-      };
+      const requestData = { message: inputValue.trim() };
 
       console.log('Sending request:', requestData);
 
       const response = await axios({
         method: 'post',
-        url: `${activeApiUrl}/direct-query`,
+        url: `${activeApiUrl}/api/chat`,
         data: requestData,
         headers: { 'Content-Type': 'application/json' },
-        timeout: 120000, // Timeout sau 120 giây (AI cần thời gian xử lý)
+        timeout: 120000,
       });
 
-      // Log the response
-      console.log('API response:', response);
-
       const data = response.data;
-      console.log('Response data:', data);
+      console.log('API response:', data);
 
-      const responseData = data?.response || [];
-      console.log('Processing responseData:', responseData); // Added debug
+      // Map deep_link → link for BotMessage's <Link to={product.link}>
+      const products = data.products?.length
+        ? data.products.map((p) => ({ ...p, link: p.deep_link }))
+        : null;
 
-      // Process the API response
-      if (Array.isArray(responseData) && responseData.length > 0) {
-        // Extract text and product items
-        const textItems = responseData.filter((item) => item.type === 'text');
-        const productItems = responseData.filter(
-          (item) => item.type === 'product'
-        );
+      const botMsg = {
+        id: uuidv4(),
+        from: 'bot',
+        text: data.answer || 'Xin lỗi, em không thể trả lời câu hỏi này.',
+        products,
+      };
 
-        // Get AI-generated text message from the backend
-        const aiMessage =
-          textItems.length > 0
-            ? textItems[0].message
-            : 'Xin lỗi, em không tìm thấy sản phẩm nào phù hợp với yêu cầu của anh/chị.';
-
-        const botMsg = {
-          id: uuidv4(),
-          from: 'bot',
-          text: aiMessage,
-          products: productItems.length > 0 ? productItems : null,
-        };
-
-        console.log('Adding bot message:', botMsg);
-        setMessages((prev) => {
-          const newMessages = [...prev, botMsg];
-          console.log('New messages state:', newMessages);
-          return newMessages;
-        });
-      } else {
-        // Fallback message if response format is unexpected
-        const botMsg = {
-          id: uuidv4(),
-          from: 'bot',
-          text: 'Xin lỗi, em không thể tìm thấy thông tin phù hợp với yêu cầu của anh/chị.',
-          products: null,
-        };
-
-        setMessages((prev) => [...prev, botMsg]);
-      }
+      console.log('Adding bot message:', botMsg);
+      setMessages((prev) => [...prev, botMsg]);
 
       setApiStatus('connected');
     } catch (error) {

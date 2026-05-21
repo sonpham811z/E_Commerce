@@ -8,7 +8,7 @@ import re
 import os
 import httpx
 
-router = APIRouter(prefix="/api/chat", tags=["chat"])
+router = APIRouter(prefix="/chat", tags=["chat"])
 
 ECOMMERCE_SYSTEM_PROMPT = """Ban la "ShopAI" - tro ly tu van thuong mai dien tu cua ShopeeLite.
 Tra loi bang tieng Viet, than thien va tu nhien nhu dang nhan tin.

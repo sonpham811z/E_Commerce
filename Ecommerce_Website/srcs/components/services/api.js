@@ -41,7 +41,7 @@ const createInstance = (baseURL) => {
 };
 
 export const authApi = createInstance(`${AUTH_URL}/api/v1`);
-export const aiApi   = createInstance(`${AI_URL}/api/v1`);
+export const aiApi   = createInstance(`${AI_URL}/api`);
 export const coreApi = createInstance(`${CORE_URL}/api/v1`);
 
 // Legacy wrappers — keep these so old imports of fetchProducts/placeOrder still work
